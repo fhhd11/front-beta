@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --host 0.0.0.0 --port $PORT",
+    "start": "npm run preview",
+    "lint": "echo 'No linting configured'",
+    "type-check": "echo 'No type checking configured'"
   },
   "dependencies": {
     "@letta-ai/letta-client": "^0.0.68664",
