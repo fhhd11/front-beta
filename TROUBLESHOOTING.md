@@ -37,7 +37,30 @@
    })
    ```
 
-### Проблема 2: Общая ошибка сборки
+### Проблема 2: Package lock file out of sync
+```
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error Missing: terser@5.44.0 from lock file
+```
+
+**Решение:**
+1. **Обновите package-lock.json локально:**
+   ```bash
+   npm install
+   git add package-lock.json
+   git commit -m "Update package-lock.json"
+   git push
+   ```
+
+2. **Или используйте npm install вместо npm ci:**
+   ```dockerfile
+   # В Dockerfile замените
+   RUN npm ci
+   # на
+   RUN npm install
+   ```
+
+### Проблема 3: Общая ошибка сборки
 ```
 17 | >>> RUN npm run build
 ```
