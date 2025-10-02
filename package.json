@@ -10,6 +10,7 @@
     "build:esbuild": "node scripts/switch-config.js esbuild && vite build",
     "preview": "vite preview --host 0.0.0.0 --port ${PORT:-3000}",
     "start": "node server.js",
+    "start:test": "node test-server.js",
     "start:preview": "npm run preview",
     "lint": "echo 'No linting configured'",
     "type-check": "echo 'No type checking configured'"
