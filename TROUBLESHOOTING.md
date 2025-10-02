@@ -2,7 +2,42 @@
 
 ## 🚨 Ошибка "RUN npm run build"
 
-### Проблема
+### Проблема 1: Terser not found
+```
+[vite:terser] terser not found. Since Vite v3, terser has become an optional dependency. You need to install it.
+```
+
+**Решение:**
+1. **Добавьте terser в devDependencies:**
+   ```json
+   {
+     "devDependencies": {
+       "terser": "^5.24.0"
+     }
+   }
+   ```
+
+2. **Или используйте esbuild (быстрее):**
+   ```javascript
+   // vite.config.js
+   export default defineConfig({
+     build: {
+       minify: 'esbuild' // вместо 'terser'
+     }
+   })
+   ```
+
+3. **Или отключите минификацию:**
+   ```javascript
+   // vite.config.js
+   export default defineConfig({
+     build: {
+       minify: false
+     }
+   })
+   ```
+
+### Проблема 2: Общая ошибка сборки
 ```
 17 | >>> RUN npm run build
 ```
