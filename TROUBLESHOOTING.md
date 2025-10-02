@@ -60,7 +60,41 @@ npm error Missing: terser@5.44.0 from lock file
    RUN npm install
    ```
 
-### Проблема 3: Общая ошибка сборки
+### Проблема 3: Health check failed
+```
+1/1 replicas never became healthy!
+Healthcheck failed!
+```
+
+**Решение:**
+1. **Проверьте, что приложение запускается:**
+   ```bash
+   # Локально протестируйте
+   npm run build
+   npm start
+   # Откройте http://localhost:3000/health
+   ```
+
+2. **Убедитесь в правильности health check пути:**
+   ```json
+   // railway.json
+   {
+     "deploy": {
+       "healthcheckPath": "/health",
+       "healthcheckTimeout": 300
+     }
+   }
+   ```
+
+3. **Проверьте порт и хост:**
+   ```javascript
+   // server.js должен слушать на 0.0.0.0:PORT
+   app.listen(port, '0.0.0.0', () => {
+     console.log(`Server running on port ${port}`)
+   })
+   ```
+
+### Проблема 4: Общая ошибка сборки
 ```
 17 | >>> RUN npm run build
 ```

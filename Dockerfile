@@ -41,4 +41,4 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 # Start the application
-CMD ["npm", "run", "preview"]
+CMD ["npm", "start"]
