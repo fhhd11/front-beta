@@ -330,13 +330,15 @@ export const messageUtils = {
         // Check if content is a JSON string containing system information
         const parsedContent = JSON.parse(lettaMessage.content)
         if (parsedContent.type === 'heartbeat' || 
+            parsedContent.type === 'login' ||
             parsedContent.reason?.includes('[This is an automated system message hidden from the user]')) {
           return null
         }
       } catch (e) {
         // If it's not JSON, check for other system message patterns
         if (lettaMessage.content.includes('[This is an automated system message hidden from the user]') ||
-            lettaMessage.content.includes('"type": "heartbeat"')) {
+            lettaMessage.content.includes('"type": "heartbeat"') ||
+            lettaMessage.content.includes('"type": "login"')) {
           return null
         }
       }
