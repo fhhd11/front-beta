@@ -59,9 +59,9 @@
     </div>
 
     <!-- Main Content Container -->
-    <div class="relative w-full max-w-[1920px] h-screen flex flex-col items-center justify-end gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-[10px]">
+    <div class="main-content-container relative w-full max-w-[1920px] h-screen flex flex-col items-center justify-end gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-[10px] pt-16 sm:pt-20 md:pt-0">
       <!-- Chat Container -->
-      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[85vh] sm:h-[80vh] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh]" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
+      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh]" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
         <!-- Top gradient fade overlay -->
         <div class="absolute top-0 left-0 right-0 h-24 pointer-events-none z-10 fade-gradient-top"></div>
         
@@ -198,42 +198,42 @@
       </div>
 
       <!-- User Info with Logout (Fixed Top Right) -->
-      <div class="fixed top-4 right-2 sm:right-4 md:right-6 lg:right-8 xl:right-12 2xl:right-16 z-50 flex items-start gap-3">
+      <div class="fixed top-2 right-2 sm:top-4 sm:right-4 md:right-6 lg:right-8 xl:right-12 2xl:right-16 z-50 flex items-start gap-2 sm:gap-3">
         <!-- User Email -->
-        <div class="text-right">
+        <div class="text-right hidden sm:block">
           <p class="text-white/60 text-xs">{{ userEmail }}</p>
         </div>
         
         <!-- Logout Button -->
         <button 
           @click="handleLogout"
-          class="header-action-button group"
+          class="header-action-button group w-8 h-8 sm:w-10 sm:h-10"
           :disabled="isLoggingOut"
           title="Выйти"
         >
-          <svg v-if="isLoggingOut" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+          <svg v-if="isLoggingOut" class="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <svg v-else class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
           </svg>
         </button>
       </div>
 
       <!-- Reset Chat Button (Fixed Top Left) -->
-      <div class="fixed top-4 left-2 sm:left-4 md:left-6 lg:left-8 xl:left-12 2xl:left-16 z-50">
+      <div class="fixed top-2 left-2 sm:top-4 sm:left-4 md:left-6 lg:left-8 xl:left-12 2xl:left-16 z-50">
         <button 
           @click="handleResetChat"
-          class="header-action-button group"
+          class="header-action-button group w-8 h-8 sm:w-10 sm:h-10"
           :disabled="isResetting || !hasMessages"
           title="Очистить историю диалога"
         >
-          <svg v-if="isResetting" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+          <svg v-if="isResetting" class="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <svg v-else class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
@@ -662,7 +662,7 @@ const handleEscapeKey = (event) => {
 
 /* Header action button - minimalistic style */
 .header-action-button {
-  @apply w-10 h-10 flex items-center justify-center rounded-full;
+  @apply flex items-center justify-center rounded-full;
   @apply text-white/40 hover:text-white;
   @apply transition-all duration-200;
   @apply cursor-pointer;
@@ -742,5 +742,29 @@ const handleEscapeKey = (event) => {
 .menu-slide-leave-from {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  .chat-container-glow {
+    margin-top: 0;
+  }
+  
+  /* Ensure proper spacing on mobile */
+  .main-content-container {
+    padding-top: 60px;
+  }
+  
+  /* Improve touch targets */
+  .header-action-button {
+    min-width: 32px;
+    min-height: 32px;
+  }
+  
+  /* Better text sizing for mobile */
+  .mobile-text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
 }
 </style>
