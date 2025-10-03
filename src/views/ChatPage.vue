@@ -3,10 +3,10 @@
     <!-- Gradient Background Effects positioned at TOP -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
       <!-- Blurred gradient block behind chat - positioned at TOP with negative offset -->
-      <div class="absolute left-1/2 -translate-x-1/2 w-full max-w-[1482px] h-[837px] rounded-[19.465px] backdrop-blur-[77.2px] shadow-[0px_0px_37.189px_-13.318px_rgba(0,0,0,0.67)] blur-[66.284px]" style="top: -687px;"></div>
+      <div class="absolute left-1/2 -translate-x-1/2 w-full max-w-[1482px] h-[837px] rounded-[19.465px] backdrop-blur-[77.2px] shadow-[0px_0px_37.189px_-13.318px_rgba(0,0,0,0.67)] blur-[66.284px] will-change-transform" style="top: -687px;"></div>
       
       <!-- SVG Gradient Ellipses - 4 ellipses with soft glow and animations -->
-      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1920px] h-full opacity-58" style="pointer-events: none;">
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1920px] h-full opacity-58 will-change-transform" style="pointer-events: none;">
         <svg class="absolute w-full h-full" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <!-- Ellipse 1 (Green) - top center -->
           <g filter="url(#filter0_f_gradient)" class="animate-float-1">
@@ -61,7 +61,7 @@
     <!-- Main Content Container -->
     <div class="main-content-container relative w-full max-w-[1920px] h-screen flex flex-col items-center justify-end gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-[10px] pt-16 sm:pt-20 md:pt-0">
       <!-- Chat Container -->
-      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh]" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
+      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh] will-change-auto" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
         <!-- Top gradient fade overlay -->
         <div class="absolute top-0 left-0 right-0 h-24 pointer-events-none z-10 fade-gradient-top"></div>
         
@@ -585,49 +585,49 @@ const handleEscapeKey = (event) => {
 /* Animated background gradients - floating effect */
 @keyframes float-1 {
   0%, 100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   33% {
-    transform: translate(30px, -20px) scale(1.05);
+    transform: translate3d(30px, -20px, 0) scale(1.05);
   }
   66% {
-    transform: translate(-20px, 30px) scale(0.95);
+    transform: translate3d(-20px, 30px, 0) scale(0.95);
   }
 }
 
 @keyframes float-2 {
   0%, 100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   33% {
-    transform: translate(-40px, 25px) scale(1.08);
+    transform: translate3d(-40px, 25px, 0) scale(1.08);
   }
   66% {
-    transform: translate(35px, -30px) scale(0.92);
+    transform: translate3d(35px, -30px, 0) scale(0.92);
   }
 }
 
 @keyframes float-3 {
   0%, 100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   33% {
-    transform: translate(25px, 40px) scale(0.95);
+    transform: translate3d(25px, 40px, 0) scale(0.95);
   }
   66% {
-    transform: translate(-30px, -25px) scale(1.05);
+    transform: translate3d(-30px, -25px, 0) scale(1.05);
   }
 }
 
 @keyframes float-4 {
   0%, 100% {
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   33% {
-    transform: translate(-35px, -30px) scale(1.06);
+    transform: translate3d(-35px, -30px, 0) scale(1.06);
   }
   66% {
-    transform: translate(40px, 20px) scale(0.94);
+    transform: translate3d(40px, 20px, 0) scale(0.94);
   }
 }
 
@@ -765,6 +765,38 @@ const handleEscapeKey = (event) => {
   .mobile-text {
     font-size: 14px;
     line-height: 1.4;
+  }
+  
+  /* Disable complex animations on mobile to prevent flickering */
+  .animate-float-1,
+  .animate-float-2,
+  .animate-float-3,
+  .animate-float-4 {
+    animation: none;
+  }
+  
+  .animate-pulse-slow {
+    animation: none;
+  }
+  
+  /* Reduce backdrop blur on mobile for better performance */
+  .backdrop-blur-77 {
+    backdrop-filter: blur(20px);
+  }
+  
+  /* Optimize glow effect for mobile */
+  .chat-container-glow {
+    animation: none;
+    box-shadow: 0px 0px 20px -5px rgba(0, 0, 0, 0.67);
+  }
+  
+  /* Disable hover effects on mobile */
+  .header-action-button:hover {
+    transform: none;
+  }
+  
+  .menu-action-button:hover {
+    transform: none;
   }
 }
 </style>

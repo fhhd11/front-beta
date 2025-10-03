@@ -33,6 +33,25 @@
     input, textarea, select {
       font-size: 16px;
     }
+    
+    /* Optimize rendering performance on mobile */
+    * {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      -webkit-perspective: 1000;
+      perspective: 1000;
+    }
+    
+    /* Reduce backdrop blur for better performance */
+    .backdrop-blur-77 {
+      backdrop-filter: blur(20px);
+    }
+    
+    /* Disable complex animations that can cause flickering */
+    .animate-pulse,
+    .animate-bounce {
+      animation-duration: 0.5s;
+    }
   }
 }
 
