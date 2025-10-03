@@ -61,7 +61,7 @@
     <!-- Main Content Container -->
     <div class="main-content-container relative w-full max-w-[1920px] h-screen flex flex-col items-center justify-end gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-[10px] pt-20 sm:pt-24 md:pt-0">
       <!-- Chat Container -->
-      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh] will-change-auto" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
+      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-220px)] sm:h-[calc(100vh-240px)] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh] will-change-auto" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
         <!-- Top gradient fade overlay -->
         <div class="absolute top-0 left-0 right-0 h-24 pointer-events-none z-10 fade-gradient-top"></div>
         
@@ -193,7 +193,7 @@
       </div>
 
       <!-- Chat Input (Outside chat block) -->
-      <div class="w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[749px] flex items-center justify-center">
+      <div class="chat-input-container w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[749px] flex items-center justify-center mb-4 sm:mb-6 md:mb-0">
         <ChatInput @send-message="handleSendMessage" :is-streaming="isStreaming" />
       </div>
 
@@ -753,6 +753,7 @@ const handleEscapeKey = (event) => {
   /* Ensure proper spacing on mobile */
   .main-content-container {
     padding-top: 80px;
+    padding-bottom: 20px;
   }
   
   /* Improve touch targets */
@@ -797,6 +798,11 @@ const handleEscapeKey = (event) => {
   
   .menu-action-button:hover {
     transform: none;
+  }
+  
+  /* Ensure input field is visible on mobile */
+  .chat-input-container {
+    margin-bottom: 20px;
   }
 }
 </style>
