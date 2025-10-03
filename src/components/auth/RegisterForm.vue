@@ -1,22 +1,6 @@
 <template>
   <div class="w-full max-w-md mx-auto">
     <form @submit.prevent="handleRegister" class="space-y-6">
-      <!-- Name Field -->
-      <div>
-        <label for="name" class="block text-sm font-medium text-white mb-2">
-          Имя
-        </label>
-        <input
-          id="name"
-          v-model="form.name"
-          type="text"
-          required
-          class="w-full px-4 py-3 bg-black/20 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent backdrop-blur-sm transition-all"
-          placeholder="Введите ваше имя"
-          :disabled="isLoading"
-        />
-      </div>
-
       <!-- Email Field -->
       <div>
         <label for="email" class="block text-sm font-medium text-white mb-2">
@@ -79,65 +63,27 @@
         </div>
       </div>
 
-      <!-- Confirm Password Field -->
-      <div>
-        <label for="confirmPassword" class="block text-sm font-medium text-white mb-2">
-          Подтвердите пароль
-        </label>
-        <div class="relative">
-          <input
-            id="confirmPassword"
-            v-model="form.confirmPassword"
-            :type="showConfirmPassword ? 'text' : 'password'"
-            required
-            class="w-full px-4 py-3 pr-12 bg-black/20 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent backdrop-blur-sm transition-all"
-            placeholder="Подтвердите пароль"
-            :disabled="isLoading"
-          />
-          <button
-            type="button"
-            @click="showConfirmPassword = !showConfirmPassword"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
-            :disabled="isLoading"
-          >
-            <svg v-if="showConfirmPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-            </svg>
-            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          </button>
-        </div>
-        <!-- Password Match Indicator -->
-        <div v-if="form.confirmPassword" class="mt-1">
-          <p class="text-xs" :class="passwordsMatch ? 'text-green-400' : 'text-red-400'">
-            {{ passwordsMatch ? '✓ Пароли совпадают' : '✗ Пароли не совпадают' }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Terms Agreement -->
-      <div class="flex items-start">
-        <input
-          id="terms"
-          v-model="form.agreeToTerms"
-          type="checkbox"
-          required
-          class="w-4 h-4 mt-1 text-white bg-black/20 border-white/20 rounded focus:ring-white/30 focus:ring-2"
-          :disabled="isLoading"
-        />
-        <label for="terms" class="ml-2 text-sm text-white/70">
-          Я согласен с 
-          <button type="button" class="text-white hover:text-white/80 underline">условиями использования</button>
-          и 
-          <button type="button" class="text-white hover:text-white/80 underline">политикой конфиденциальности</button>
-        </label>
-      </div>
-
       <!-- Error Message -->
       <div v-if="error" class="p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
         <p class="text-sm text-red-300">{{ error }}</p>
+      </div>
+
+      <!-- Post Registration Loading Message -->
+      <div v-if="postRegistrationLoading" class="p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+        <p class="text-sm text-blue-300">
+          Создаем ваш аккаунт и настраиваем AI-агента. Это может занять несколько секунд...
+        </p>
+      </div>
+
+      <!-- Post Registration Error Message -->
+      <div v-if="authError && authError.includes('не готовы после максимального количества попыток')" class="p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+        <p class="text-sm text-yellow-300 mb-2">{{ authError }}</p>
+        <button
+          @click="window.location.reload()"
+          class="text-sm text-yellow-200 hover:text-yellow-100 underline"
+        >
+          Обновить страницу
+        </button>
       </div>
 
       <!-- Submit Button -->
@@ -146,12 +92,19 @@
         :disabled="isLoading || !isFormValid"
         class="w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
       >
-        <span v-if="isLoading" class="flex items-center justify-center">
+        <span v-if="loading" class="flex items-center justify-center">
           <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
           Регистрация...
+        </span>
+        <span v-else-if="postRegistrationLoading" class="flex items-center justify-center">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Настройка аккаунта...
         </span>
         <span v-else>Зарегистрироваться</span>
       </button>
@@ -179,39 +132,28 @@ import { useAuth } from '../../composables/useAuth.js'
 
 const emit = defineEmits(['register', 'switch-to-login'])
 
-const { signUp, loading, error: authError, clearError } = useAuth()
+const { signUp, loading, error: authError, clearError, postRegistrationLoading } = useAuth()
 
 const form = ref({
-  name: '',
   email: '',
-  password: '',
-  confirmPassword: '',
-  agreeToTerms: false
+  password: ''
 })
 
 const showPassword = ref(false)
-const showConfirmPassword = ref(false)
 const localError = ref('')
 
-const passwordsMatch = computed(() => {
-  return form.value.password && form.value.confirmPassword && form.value.password === form.value.confirmPassword
-})
-
 const isFormValid = computed(() => {
-  return form.value.name && 
-         form.value.email && 
+  return form.value.email && 
          form.value.email.includes('@') &&
          form.value.password && 
-         form.value.password.length >= 6 &&
-         passwordsMatch.value &&
-         form.value.agreeToTerms
+         form.value.password.length >= 6
 })
 
 const error = computed(() => {
   return localError.value || authError.value
 })
 
-const isLoading = computed(() => loading.value)
+const isLoading = computed(() => loading.value || postRegistrationLoading.value)
 
 const getPasswordStrength = () => {
   const password = form.value.password
@@ -261,8 +203,7 @@ const handleRegister = async () => {
   try {
     const { data, error: signUpError } = await signUp(
       form.value.email, 
-      form.value.password, 
-      { name: form.value.name }
+      form.value.password
     )
     
     if (signUpError) {
@@ -281,7 +222,6 @@ const handleRegister = async () => {
     
     // Success - emit register event
     emit('register', {
-      name: form.value.name,
       email: form.value.email,
       user: data.user
     })

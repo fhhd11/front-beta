@@ -9,6 +9,7 @@ const userProfile = ref(null) // Extended user info from backend
 const lettaAgentId = ref(null) // User's Letta agent ID
 const loading = ref(true)
 const error = ref(null)
+const postRegistrationLoading = ref(false) // Loading state after registration
 
 // Auth state management
 export function useAuth() {
@@ -48,6 +49,69 @@ export function useAuth() {
       if (err.message && (err.message.includes('fetch') || err.message.includes('CORS'))) {
         console.warn('Network/CORS issue detected, continuing without profile data')
         return
+      }
+    }
+  }
+
+  // Wait for user data and agent to be ready after registration
+  const waitForUserDataReady = async (maxAttempts = 30, intervalMs = 2000) => {
+    postRegistrationLoading.value = true
+    
+    try {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`Waiting for user data... Attempt ${attempt}/${maxAttempts}`)
+        
+        try {
+          // Try to load user profile
+          await loadUserProfile()
+          
+          // Check if we have both user profile and agent ID
+          if (userProfile.value && lettaAgentId.value) {
+            console.log('User data is ready!', {
+              hasProfile: !!userProfile.value,
+              hasAgentId: !!lettaAgentId.value,
+              agentId: lettaAgentId.value
+            })
+            postRegistrationLoading.value = false
+            return { success: true, data: userProfile.value }
+          }
+          
+          // If we have profile but no agent ID yet, continue waiting
+          if (userProfile.value && !lettaAgentId.value) {
+            console.log('User profile loaded but agent not ready yet...')
+          }
+          
+        } catch (profileError) {
+          console.warn(`Profile load attempt ${attempt} failed:`, profileError)
+          // Continue to next attempt for network errors
+          if (profileError.message && profileError.message.includes('fetch')) {
+            console.log('Network error, retrying...')
+          } else {
+            // For other errors, wait a bit longer before retry
+            await new Promise(resolve => setTimeout(resolve, intervalMs * 0.5))
+          }
+        }
+        
+        // Wait before next attempt
+        if (attempt < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, intervalMs))
+        }
+      }
+      
+      // If we reach here, max attempts exceeded
+      console.warn('User data not ready after maximum attempts')
+      postRegistrationLoading.value = false
+      return { 
+        success: false, 
+        error: 'Данные пользователя не готовы после максимального количества попыток. Попробуйте обновить страницу.' 
+      }
+      
+    } catch (err) {
+      console.error('Error waiting for user data:', err)
+      postRegistrationLoading.value = false
+      return { 
+        success: false, 
+        error: err.message || 'Ошибка при ожидании данных пользователя' 
       }
     }
   }
@@ -110,6 +174,18 @@ export function useAuth() {
 
       if (signUpError) {
         throw signUpError
+      }
+
+      // If registration was successful, wait for user data to be ready
+      if (data.user) {
+        console.log('Registration successful, waiting for user data...')
+        const waitResult = await waitForUserDataReady()
+        
+        if (!waitResult.success) {
+          console.warn('User data not ready after registration:', waitResult.error)
+          // Set error for user to see, but don't fail the registration completely
+          error.value = waitResult.error
+        }
       }
 
       return { data, error: null }
@@ -272,6 +348,7 @@ export function useAuth() {
     lettaAgentId: computed(() => lettaAgentId.value),
     loading: computed(() => loading.value),
     error: computed(() => error.value),
+    postRegistrationLoading: computed(() => postRegistrationLoading.value),
     
     // Computed
     isAuthenticated,
@@ -289,7 +366,8 @@ export function useAuth() {
     clearError,
     initAuth,
     setupAuthListener,
-    loadUserProfile
+    loadUserProfile,
+    waitForUserDataReady
   }
 }
 
