@@ -55,32 +55,13 @@ export const userApi = {
     }
   },
 
-  // Get user's agent information
+  // Get user's agent information (deprecated - using Letta API directly)
+  // Agent info is now available through user profile (letta_agent_id)
   async getAgentInfo() {
-    try {
-      const { data, error } = await apiClient.get(API_ENDPOINTS.AGENT_INFO)
-      
-      if (error) {
-        throw error
-      }
-
-      return {
-        data: {
-          id: data.id,
-          name: data.name,
-          status: data.status,
-          created_at: data.created_at,
-          // Add any other agent fields from your backend
-          ...data
-        },
-        error: null
-      }
-    } catch (error) {
-      console.error('Error fetching agent info:', error)
-      return {
-        data: null,
-        error: error.message || 'Failed to fetch agent information'
-      }
+    console.warn('getAgentInfo is deprecated. Agent info is available through user profile.')
+    return {
+      data: null,
+      error: 'Agent info is available through user profile (letta_agent_id)'
     }
   }
 }

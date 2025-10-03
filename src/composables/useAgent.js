@@ -65,6 +65,16 @@ export function useAgent() {
     agentError.value = null
   }
 
+  // Update agent name locally
+  const updateAgentName = (newName) => {
+    if (agentInfo.value) {
+      agentInfo.value = {
+        ...agentInfo.value,
+        name: newName
+      }
+    }
+  }
+
   return {
     // State
     agentInfo: computed(() => agentInfo.value),
@@ -81,6 +91,7 @@ export function useAgent() {
     // Methods
     loadAgentInfo,
     getAgentDisplayInfo,
-    clearAgentError
+    clearAgentError,
+    updateAgentName
   }
 }

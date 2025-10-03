@@ -26,6 +26,11 @@ export function useAuth() {
       
       if (profileError) {
         console.warn('Failed to load user profile:', profileError)
+        // Don't throw error for CORS issues, just log and continue
+        if (profileError.includes('CORS') || profileError.includes('fetch')) {
+          console.warn('CORS or network issue detected, continuing without profile data')
+          return
+        }
         return
       }
 
@@ -39,6 +44,11 @@ export function useAuth() {
       })
     } catch (err) {
       console.error('Error loading user profile:', err)
+      // Don't throw error for network/CORS issues
+      if (err.message && (err.message.includes('fetch') || err.message.includes('CORS'))) {
+        console.warn('Network/CORS issue detected, continuing without profile data')
+        return
+      }
     }
   }
 
@@ -65,11 +75,17 @@ export function useAuth() {
 
     } catch (err) {
       console.error('Auth initialization error:', err)
-      error.value = err.message
-      user.value = null
-      session.value = null
-      userProfile.value = null
-      lettaAgentId.value = null
+      // Don't set error for network/CORS issues, just log them
+      if (err.message && (err.message.includes('fetch') || err.message.includes('CORS'))) {
+        console.warn('Network/CORS issue during auth initialization, continuing with Supabase auth only')
+        error.value = null
+      } else {
+        error.value = err.message
+        user.value = null
+        session.value = null
+        userProfile.value = null
+        lettaAgentId.value = null
+      }
     } finally {
       loading.value = false
     }

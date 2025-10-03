@@ -6,14 +6,15 @@
         v-model="messageInput"
         ref="inputRef"
         type="text" 
-        placeholder="text,photo,video,code"
-        class="flex-1 bg-transparent text-[#4E4E4E] font-['Roboto_Mono'] text-xs sm:text-sm md:text-base lg:text-lg xl:text-[16.406px] font-normal tracking-[1.5px] sm:tracking-[2px] md:tracking-[2.5px] lg:tracking-[3px] xl:tracking-[3.4452px] lowercase outline-none border-none placeholder:text-[#4E4E4E] leading-[2]"
+        :placeholder="isStreaming ? 'Агент печатает...' : 'text,photo,video,code'"
+        :disabled="isStreaming"
+        class="flex-1 bg-transparent text-[#4E4E4E] font-['Roboto_Mono'] text-xs sm:text-sm md:text-base lg:text-lg xl:text-[16.406px] font-normal tracking-[1.5px] sm:tracking-[2px] md:tracking-[2.5px] lg:tracking-[3px] xl:tracking-[3.4452px] lowercase outline-none border-none placeholder:text-[#4E4E4E] leading-[2] disabled:opacity-50 disabled:cursor-not-allowed"
         @keydown.enter="handleSend"
         @keydown.escape="clearInput"
       />
       <button 
         @click="handleSend"
-        :disabled="!messageInput.trim()"
+        :disabled="!messageInput.trim() || isStreaming"
         class="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-[25.336px] xl:h-[26.115px] hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <svg viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
@@ -28,6 +29,13 @@
 import { ref, nextTick, onMounted } from 'vue'
 
 const emit = defineEmits(['send-message'])
+
+const props = defineProps({
+  isStreaming: {
+    type: Boolean,
+    default: false
+  }
+})
 
 const messageInput = ref('')
 const inputRef = ref(null)

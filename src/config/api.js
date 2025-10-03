@@ -25,13 +25,13 @@ export const ENDPOINTS = {
     UPDATE_PROFILE: '/api/v1/user/profile'
   },
   
-  // Agent endpoints
-  AGENT: {
-    INFO: '/api/v1/agent',
-    MESSAGES: '/api/v1/agent/messages',
-    MEMORY: '/api/v1/agent/memory',
-    STATUS: '/api/v1/agent/status'
-  },
+  // Agent endpoints (deprecated - using Letta API directly)
+  // AGENT: {
+  //   INFO: '/api/v1/agent',
+  //   MESSAGES: '/api/v1/agent/messages',
+  //   MEMORY: '/api/v1/agent/memory',
+  //   STATUS: '/api/v1/agent/status'
+  // },
   
   // Chat endpoints
   CHAT: {

@@ -112,6 +112,15 @@ class ApiClient {
     })
   }
 
+  // PATCH request
+  async patch(endpoint, data = null, options = {}) {
+    return this.request(endpoint, {
+      method: 'PATCH',
+      ...(data && { body: JSON.stringify(data) }),
+      ...options
+    })
+  }
+
   // DELETE request
   async delete(endpoint, options = {}) {
     return this.request(endpoint, {
@@ -161,10 +170,10 @@ export const API_ENDPOINTS = {
   ME: ENDPOINTS.USER.ME,
   USER_PROFILE: ENDPOINTS.USER.PROFILE,
   
-  // Agent endpoints
-  AGENT_INFO: ENDPOINTS.AGENT.INFO,
-  AGENT_MESSAGES: ENDPOINTS.AGENT.MESSAGES,
-  AGENT_MEMORY: ENDPOINTS.AGENT.MEMORY,
+  // Agent endpoints (deprecated - using Letta API directly)
+  // AGENT_INFO: ENDPOINTS.AGENT.INFO,
+  // AGENT_MESSAGES: ENDPOINTS.AGENT.MESSAGES,
+  // AGENT_MEMORY: ENDPOINTS.AGENT.MEMORY,
   
   // Chat endpoints
   SEND_MESSAGE: ENDPOINTS.CHAT.SEND_MESSAGE,
