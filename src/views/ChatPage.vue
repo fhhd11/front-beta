@@ -95,7 +95,7 @@
                         :class="expandedReasoning[block.data.id] ? 'max-h-[400px] sm:max-h-[450px] md:max-h-[500px] overflow-y-auto scrollbar-hidden' : 'max-h-[30px] sm:max-h-[35px] md:max-h-[40px]'"
                         @click="toggleReasoning(block.data.id)"
                       >
-                        <p v-for="(line, index) in block.data.reasoning.split('\n')" :key="index" :class="{ 'mb-0': index === block.data.reasoning.split('\n').length - 1 }">
+                        <p v-for="(line, index) in (block.data.reasoning || '').split('\n')" :key="index" :class="{ 'mb-0': index === (block.data.reasoning || '').split('\n').length - 1 }">
                           {{ line }}
                         </p>
                       </div>

@@ -372,7 +372,7 @@ export const messageUtils = {
       id: `${lettaMessage.id}-${lettaMessage.message_type}`, // Make ID unique by combining with message type
       originalId: lettaMessage.id, // Keep original ID for reference
       role: messageUtils.getRoleFromMessageType(lettaMessage.message_type),
-      content: lettaMessage.content,
+      content: lettaMessage.content || '',
       reasoning: lettaMessage.reasoning || null,
       timestamp: new Date(lettaMessage.date),
       messageType: lettaMessage.message_type,
