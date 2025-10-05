@@ -331,6 +331,7 @@ export const messageUtils = {
         const parsedContent = JSON.parse(lettaMessage.content)
         if (parsedContent.type === 'heartbeat' || 
             parsedContent.type === 'login' ||
+            parsedContent.type === 'system_alert' ||
             parsedContent.reason?.includes('[This is an automated system message hidden from the user]')) {
           return null
         }
@@ -338,29 +339,36 @@ export const messageUtils = {
         // If it's not JSON, check for other system message patterns
         if (lettaMessage.content.includes('[This is an automated system message hidden from the user]') ||
             lettaMessage.content.includes('"type": "heartbeat"') ||
-            lettaMessage.content.includes('"type": "login"')) {
+            lettaMessage.content.includes('"type": "login"') ||
+            lettaMessage.content.includes('"type": "system_alert"')) {
           return null
         }
       }
     }
 
-    // Skip tool-related messages that shouldn't be visible to users
-    if (lettaMessage.message_type === 'tool_call_message' || 
-        lettaMessage.message_type === 'tool_return_message') {
-      return null
-    }
+    // Keep tool-related messages for display
+    // if (lettaMessage.message_type === 'tool_call_message' || 
+    //     lettaMessage.message_type === 'tool_return_message') {
+    //   return null
+    // }
 
-    // Debug logging for reasoning messages
-    if (lettaMessage.message_type === 'reasoning_message') {
-      console.log('Converting reasoning message:', {
+    // Debug logging for tool messages only
+    if (lettaMessage.message_type === 'tool_call_message') {
+      console.log('Converting tool call message:', {
         id: lettaMessage.id,
-        reasoning: lettaMessage.reasoning,
-        content: lettaMessage.content,
-        keys: Object.keys(lettaMessage)
+        tool_call: lettaMessage.tool_call
+      })
+    }
+    
+    if (lettaMessage.message_type === 'tool_return_message') {
+      console.log('Converting tool return message:', {
+        id: lettaMessage.id,
+        tool_return: lettaMessage.tool_return,
+        tool_call_id: lettaMessage.tool_call_id
       })
     }
 
-    return {
+    const convertedMessage = {
       id: `${lettaMessage.id}-${lettaMessage.message_type}`, // Make ID unique by combining with message type
       originalId: lettaMessage.id, // Keep original ID for reference
       role: messageUtils.getRoleFromMessageType(lettaMessage.message_type),
@@ -374,6 +382,22 @@ export const messageUtils = {
       isError: lettaMessage.is_err,
       seqId: lettaMessage.seq_id
     }
+
+    // Add tool-specific fields
+    if (lettaMessage.message_type === 'tool_call_message') {
+      convertedMessage.toolCall = lettaMessage.tool_call || null
+      // Also store the full message for debugging
+      convertedMessage.originalToolCallMessage = lettaMessage
+    }
+    
+    if (lettaMessage.message_type === 'tool_return_message') {
+      convertedMessage.toolReturn = lettaMessage.tool_return || null
+      convertedMessage.toolCallId = lettaMessage.tool_call_id || null
+      // Also store the full message for debugging
+      convertedMessage.originalToolReturnMessage = lettaMessage
+    }
+
+    return convertedMessage
   },
 
   // Get role from message type
@@ -408,63 +432,103 @@ export const messageUtils = {
     })
   },
 
-  // Group related messages (reasoning + assistant) and filter out empty content
+  // Group related messages (reasoning + assistant + tool calls) and filter out empty content
   processMessages(messages) {
-    console.log('Processing messages:', messages)
     const processed = []
-    let currentGroup = null
+    let currentAgentGroup = null
+    let currentToolCalls = []
 
     for (const message of messages) {
-      console.log('Processing message:', message.messageType, message.content, 'reasoning:', message.reasoning)
       
-      // Skip messages with empty content (except reasoning messages)
-      if (!message.content && message.messageType !== 'reasoning_message') {
+      // Skip messages with empty content (except reasoning and tool messages)
+      if (!message.content && 
+          message.messageType !== 'reasoning_message' && 
+          message.messageType !== 'tool_call_message' && 
+          message.messageType !== 'tool_return_message') {
         console.log('Skipping empty message:', message.messageType)
         continue
       }
 
-      if (message.messageType === 'reasoning_message') {
-        console.log('Starting new group with reasoning:', message.reasoning)
-        // Start a new group with reasoning
-        currentGroup = {
-          id: message.id, // Use reasoning message ID as group ID
-          role: 'agent', // Groups are always agent messages
-          reasoning: message,
-          assistant: null,
-          timestamp: message.timestamp,
-          messageType: 'grouped' // Mark as grouped message
+      // If this is a user message, finalize current agent group and start fresh
+      if (message.role === 'user') {
+        if (currentAgentGroup) {
+          processed.push(currentAgentGroup)
+          currentAgentGroup = null
+          currentToolCalls = []
         }
-      } else if (message.messageType === 'assistant_message' && currentGroup) {
-        console.log('Adding assistant to current group')
-        // Add assistant message to current group
-        currentGroup.assistant = message
-        // Update group ID to use assistant message ID if available
-        if (message.id) {
-          currentGroup.id = message.id
+        processed.push(message)
+        continue
+      }
+
+      // All agent-related messages (reasoning, tool calls, assistant) go into one group
+      if (message.role === 'agent' || 
+          message.messageType === 'reasoning_message' || 
+          message.messageType === 'tool_call_message' || 
+          message.messageType === 'tool_return_message' || 
+          message.messageType === 'assistant_message') {
+        
+        // Create agent group if it doesn't exist
+        if (!currentAgentGroup) {
+          currentAgentGroup = {
+            id: message.id,
+            role: 'agent',
+            blocks: [], // Array to store all blocks in order
+            timestamp: message.timestamp,
+            messageType: 'grouped'
+          }
         }
-        // Add the group to processed messages
-        processed.push(currentGroup)
-        currentGroup = null
+
+        // Add different message types to the group in order
+        if (message.messageType === 'reasoning_message') {
+          currentAgentGroup.blocks.push({
+            type: 'reasoning',
+            data: message
+          })
+          // Update group ID to use reasoning message ID
+          currentAgentGroup.id = message.id
+        } else if (message.messageType === 'tool_call_message') {
+          currentAgentGroup.blocks.push({
+            type: 'tool_call',
+            data: message
+          })
+          currentToolCalls.push(message)
+        } else if (message.messageType === 'tool_return_message') {
+          console.log('Processing tool return message:', message)
+          // Find matching tool call block and add return value
+          if (currentAgentGroup.blocks.length > 0) {
+            // Find the last tool_call block
+            const lastToolCallBlock = [...currentAgentGroup.blocks].reverse().find(block => block.type === 'tool_call')
+            if (lastToolCallBlock) {
+              console.log('Found matching tool call block, adding return value')
+              lastToolCallBlock.data.toolReturn = message
+            } else {
+              console.log('No matching tool call block found')
+            }
+          }
+        } else if (message.messageType === 'assistant_message') {
+          currentAgentGroup.blocks.push({
+            type: 'assistant',
+            data: message
+          })
+          // Update group ID to use assistant message ID
+          currentAgentGroup.id = message.id
+        }
       } else {
-        console.log('Adding regular message:', message.messageType)
-        // Regular message (user, tool, etc.)
-        if (currentGroup) {
-          console.log('Adding incomplete group')
-          // If we have an incomplete group, add it
-          processed.push(currentGroup)
-          currentGroup = null
+        // Other message types - finalize current agent group and add this message
+        if (currentAgentGroup) {
+          processed.push(currentAgentGroup)
+          currentAgentGroup = null
+          currentToolCalls = []
         }
         processed.push(message)
       }
     }
 
-    // Add any remaining incomplete group
-    if (currentGroup) {
-      console.log('Adding remaining incomplete group')
-      processed.push(currentGroup)
+    // Add any remaining agent group
+    if (currentAgentGroup) {
+      processed.push(currentAgentGroup)
     }
-
-    console.log('Final processed messages:', processed)
+    
     return processed
   }
 }

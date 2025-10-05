@@ -60,6 +60,7 @@
 
     <!-- Main Content Container -->
     <div class="main-content-container relative w-full max-w-[1920px] h-screen flex flex-col items-center justify-end gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-[10px] pt-20 sm:pt-24 md:pt-0">
+
       <!-- Chat Container -->
       <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-220px)] sm:h-[calc(100vh-240px)] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh] will-change-auto" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
         <!-- Top gradient fade overlay -->
@@ -73,100 +74,108 @@
               <!-- User message -->
               <ChatMessage v-if="message.role === 'user'" :message="message" :is-user="true" />
               
-              <!-- Grouped message from history (with reasoning + assistant) -->
-              <div v-else-if="message.messageType === 'grouped'" class="flex flex-col gap-4 w-full history-message-appear">
-                <!-- Agent Avatar -->
+              <!-- Agent messages (both grouped and streaming) -->
+              <div v-else-if="message.role === 'agent' || message.messageType === 'grouped'" class="flex flex-col gap-4 w-full" :class="{ 'history-message-appear': message.messageType === 'grouped', 'agent-avatar-animation': message.role === 'agent' }">
+                <!-- Agent Avatar (only one for the whole group) -->
                 <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-[29px] xl:h-[29.275px] flex-shrink-0">
                   <svg viewBox="0 0 29 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
                     <path d="M18.8662 0.28418C19.0924 -0.163482 19.7599 -0.0594699 19.8398 0.435547L20.96 7.41602C21.0015 7.67502 21.2922 7.80964 21.5166 7.67383L28.2129 3.61426C28.633 3.3596 29.1382 3.77935 28.9658 4.23926L24.9316 14.9873C24.8666 15.1605 24.9398 15.3557 25.1025 15.4434L28.0957 17.0479C28.5464 17.2894 28.4111 17.9681 27.9023 18.0186L24.7803 18.3271C24.5153 18.3535 24.3642 18.6436 24.4941 18.876L27.1396 23.5928C27.3459 23.9604 27.0498 24.4071 26.6309 24.3604L19.4297 23.5566C19.3143 23.5439 19.1987 23.5864 19.1191 23.6709L14.0078 29.1123C13.7512 29.385 13.2984 29.3033 13.1533 28.958L10.3262 22.2314C10.2641 22.0843 10.1143 21.9928 9.95508 22.0059L6.38965 22.2988C5.93036 22.3362 5.65419 21.7998 5.95215 21.4482L8.00293 19.0312C8.15668 18.8496 8.10152 18.5715 7.88965 18.4629L0.28125 14.5693C-0.163676 14.3409 -0.0575712 13.6754 0.436523 13.5967L7.71484 12.4414C7.98322 12.3988 8.11564 12.0911 7.96191 11.8672L0.835938 1.5166C0.527945 1.06823 1.03181 0.508808 1.50977 0.768555L13.0205 7.03809C13.2323 7.15322 13.4962 7.03837 13.5557 6.80469L13.7783 5.9248C13.8854 5.50446 14.4317 5.39441 14.6934 5.74023L15.1865 6.39355C15.3515 6.61195 15.6882 6.58127 15.8115 6.33691L18.8662 0.28418ZM13.0039 14.1426C12.5957 14.1428 12.2531 14.4834 12.3867 14.8691C12.4956 15.1834 12.6754 15.4723 12.915 15.7119C13.331 16.1277 13.8952 16.3613 14.4834 16.3613C15.0716 16.3613 15.6358 16.1278 16.0518 15.7119C16.2913 15.4724 16.4703 15.1833 16.5791 14.8691C16.7127 14.4832 16.3703 14.1426 15.9619 14.1426H13.0039ZM19.4424 14.1426C19.0342 14.1428 18.6916 14.4834 18.8252 14.8691C18.934 15.1833 19.113 15.4723 19.3525 15.7119C19.7685 16.1279 20.3336 16.3613 20.9219 16.3613C21.51 16.3613 22.0743 16.1278 22.4902 15.7119C22.7298 15.4723 22.9087 15.1833 23.0176 14.8691C23.1512 14.4832 22.8088 14.1426 22.4004 14.1426H19.4424Z" fill="#F5F5F5"/>
                   </svg>
                 </div>
                 
-                <!-- Reasoning block (for historical messages) -->
-                <div v-if="message.reasoning && message.reasoning.reasoning" class="relative w-full mb-3 sm:mb-4 md:mb-6 cursor-pointer group ml-6 sm:ml-7 md:ml-8 lg:ml-9 xl:ml-3 sm:ml-4 md:ml-5 lg:ml-6 xl:ml-8 reasoning-block">
-                  <div class="w-[2px] sm:w-[2.5px] md:w-[3.337px] bg-white absolute left-[-10px] sm:left-[-14px] md:left-[-18px] lg:left-[-22px] xl:left-[-30px] top-[2px] sm:top-[2.5px] md:top-[3.121px] bottom-0 transition-opacity group-hover:opacity-80"></div>
-                  <div 
-                    class="text-white/70 font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-[15px] leading-[1.3] sm:leading-[1.4] md:leading-[16.871px] tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.5px] overflow-hidden pr-2 transition-all duration-300 ease-in-out"
-                    :class="expandedReasoning[message.reasoning.id || message.id] ? 'max-h-[400px] sm:max-h-[450px] md:max-h-[500px] overflow-y-auto scrollbar-hidden' : 'max-h-[30px] sm:max-h-[35px] md:max-h-[40px]'"
-                    @click="toggleReasoning(message.reasoning.id || message.id)"
-                  >
-                    <p v-for="(line, index) in message.reasoning.reasoning.split('\n')" :key="index" :class="{ 'mb-0': index === message.reasoning.reasoning.split('\n').length - 1 }">
-                      {{ line }}
-                    </p>
-                  </div>
-                  <!-- Expand/Collapse indicator -->
-                  <div 
-                    class="mt-1 sm:mt-1.5 md:mt-2 text-white/50 text-[10px] sm:text-xs font-['Roboto_Mono'] hover:text-white/80 transition-colors"
-                    @click="toggleReasoning(message.reasoning.id || message.id)"
-                  >
-                    {{ expandedReasoning[message.reasoning.id || message.id] ? '▲ Свернуть' : '▼ Развернуть рассуждения' }}
-                  </div>
-                </div>
-                
-                <!-- Assistant message (from history) -->
-                <div v-if="message.assistant" class="ml-3 sm:ml-4 md:ml-5 lg:ml-6 xl:ml-8 response-block">
-                  <ChatMessage 
-                    :message="message.assistant" 
-                    :is-user="false" 
-                  />
-                </div>
-              </div>
-              
-              <!-- Streaming agent message (real-time) -->
-              <div v-else-if="message.role === 'agent'" class="flex flex-col gap-4 w-full">
-                <!-- Agent Avatar -->
-                <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-[29px] xl:h-[29.275px] flex-shrink-0 agent-avatar-animation">
-                  <svg viewBox="0 0 29 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
-                    <path d="M18.8662 0.28418C19.0924 -0.163482 19.7599 -0.0594699 19.8398 0.435547L20.96 7.41602C21.0015 7.67502 21.2922 7.80964 21.5166 7.67383L28.2129 3.61426C28.633 3.3596 29.1382 3.77935 28.9658 4.23926L24.9316 14.9873C24.8666 15.1605 24.9398 15.3557 25.1025 15.4434L28.0957 17.0479C28.5464 17.2894 28.4111 17.9681 27.9023 18.0186L24.7803 18.3271C24.5153 18.3535 24.3642 18.6436 24.4941 18.876L27.1396 23.5928C27.3459 23.9604 27.0498 24.4071 26.6309 24.3604L19.4297 23.5566C19.3143 23.5439 19.1987 23.5864 19.1191 23.6709L14.0078 29.1123C13.7512 29.385 13.2984 29.3033 13.1533 28.958L10.3262 22.2314C10.2641 22.0843 10.1143 21.9928 9.95508 22.0059L6.38965 22.2988C5.93036 22.3362 5.65419 21.7998 5.95215 21.4482L8.00293 19.0312C8.15668 18.8496 8.10152 18.5715 7.88965 18.4629L0.28125 14.5693C-0.163676 14.3409 -0.0575712 13.6754 0.436523 13.5967L7.71484 12.4414C7.98322 12.3988 8.11564 12.0911 7.96191 11.8672L0.835938 1.5166C0.527945 1.06823 1.03181 0.508808 1.50977 0.768555L13.0205 7.03809C13.2323 7.15322 13.4962 7.03837 13.5557 6.80469L13.7783 5.9248C13.8854 5.50446 14.4317 5.39441 14.6934 5.74023L15.1865 6.39355C15.3515 6.61195 15.6882 6.58127 15.8115 6.33691L18.8662 0.28418ZM13.0039 14.1426C12.5957 14.1428 12.2531 14.4834 12.3867 14.8691C12.4956 15.1834 12.6754 15.4723 12.915 15.7119C13.331 16.1277 13.8952 16.3613 14.4834 16.3613C15.0716 16.3613 15.6358 16.1278 16.0518 15.7119C16.2913 15.4724 16.4703 15.1833 16.5791 14.8691C16.7127 14.4832 16.3703 14.1426 15.9619 14.1426H13.0039ZM19.4424 14.1426C19.0342 14.1428 18.6916 14.4834 18.8252 14.8691C18.934 15.1833 19.113 15.4723 19.3525 15.7119C19.7685 16.1279 20.3336 16.3613 20.9219 16.3613C21.51 16.3613 22.0743 16.1278 22.4902 15.7119C22.7298 15.4723 22.9087 15.1833 23.0176 14.8691C23.1512 14.4832 22.8088 14.1426 22.4004 14.1426H19.4424Z" fill="#F5F5F5"/>
-                  </svg>
-                </div>
-                
-                <!-- Reasoning block (appears above "typing" text - streaming) -->
-                <div v-if="message.reasoning && message.reasoning.reasoning" class="relative w-full mb-3 sm:mb-4 md:mb-6 cursor-pointer group ml-3 sm:ml-4 md:ml-5 lg:ml-6 xl:ml-8 reasoning-block">
-                  <div class="w-[2px] sm:w-[2.5px] md:w-[3.337px] bg-white absolute left-[-10px] sm:left-[-14px] md:left-[-18px] lg:left-[-22px] xl:left-[-30px] top-[2px] sm:top-[2.5px] md:top-[3.121px] bottom-0 transition-opacity group-hover:opacity-80"></div>
-                  <div 
-                    class="text-white/70 font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-[15px] leading-[1.3] sm:leading-[1.4] md:leading-[16.871px] tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.5px] overflow-hidden pr-2 transition-all duration-300 ease-in-out"
-                    :class="expandedReasoning[message.reasoning.id || message.id] ? 'max-h-[400px] sm:max-h-[450px] md:max-h-[500px] overflow-y-auto scrollbar-hidden' : 'max-h-[30px] sm:max-h-[35px] md:max-h-[40px]'"
-                    @click="toggleReasoning(message.reasoning.id || message.id)"
-                  >
-                    <p v-for="(line, index) in message.reasoning.reasoning.split('\n')" :key="index" :class="{ 'mb-0': index === message.reasoning.reasoning.split('\n').length - 1 }">
-                      {{ line }}
-                    </p>
-                  </div>
-                  <!-- Expand/Collapse indicator -->
-                  <div 
-                    class="mt-1 sm:mt-1.5 md:mt-2 text-white/50 text-[10px] sm:text-xs font-['Roboto_Mono'] hover:text-white/80 transition-colors"
-                    @click="toggleReasoning(message.reasoning.id || message.id)"
-                  >
-                    {{ expandedReasoning[message.reasoning.id || message.id] ? '▲ Свернуть' : '▼ Развернуть рассуждения' }}
-                  </div>
-                </div>
-                
-                <!-- "Агент печатает..." indicator (appears between reasoning and response, fades out when done) -->
-                <transition name="fade">
-                  <div v-if="message.isStreaming" class="flex items-center gap-2 ml-3 sm:ml-4 md:ml-5 lg:ml-6 xl:ml-8 typing-indicator">
-                    <div class="flex gap-1">
-                      <div class="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
-                      <div class="w-2 h-2 bg-white/60 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
-                      <div class="w-2 h-2 bg-white/60 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                <!-- Content blocks (all indented to align with avatar) -->
+                <div class="ml-3 sm:ml-4 md:ml-5 lg:ml-6 xl:ml-8 flex flex-col gap-4">
+                  <!-- Render blocks in order -->
+                  <template v-for="(block, blockIndex) in message.blocks" :key="`${block.type}-${blockIndex}`">
+                    <!-- Reasoning block -->
+                    <div v-if="block.type === 'reasoning'" class="relative w-full mb-3 sm:mb-4 md:mb-6 cursor-pointer group reasoning-block" :data-reasoning-id="block.data.id">
+                      <div class="w-[2px] sm:w-[2.5px] md:w-[3.337px] bg-white absolute left-[-10px] sm:left-[-14px] md:left-[-18px] lg:left-[-22px] xl:left-[-30px] top-[2px] sm:top-[2.5px] md:top-[3.121px] bottom-0 transition-opacity group-hover:opacity-80"></div>
+                      <div 
+                        class="text-white/70 font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-[15px] leading-[1.3] sm:leading-[1.4] md:leading-[16.871px] tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.5px] overflow-hidden pr-2 transition-all duration-300 ease-in-out"
+                        :class="expandedReasoning[block.data.id] ? 'max-h-[400px] sm:max-h-[450px] md:max-h-[500px] overflow-y-auto scrollbar-hidden' : 'max-h-[30px] sm:max-h-[35px] md:max-h-[40px]'"
+                        @click="toggleReasoning(block.data.id)"
+                      >
+                        <p v-for="(line, index) in block.data.reasoning.split('\n')" :key="index" :class="{ 'mb-0': index === block.data.reasoning.split('\n').length - 1 }">
+                          {{ line }}
+                        </p>
+                      </div>
+                      <!-- Expand/Collapse indicator - only show if content overflows -->
+                      <div 
+                        v-if="reasoningOverflow[block.data.id]"
+                        class="mt-1 sm:mt-1.5 md:mt-2 text-white/50 text-[10px] sm:text-xs font-['Roboto_Mono'] hover:text-white/80 transition-colors"
+                        @click="toggleReasoning(block.data.id)"
+                      >
+                        {{ expandedReasoning[block.data.id] ? '▲ Свернуть' : '▼ Развернуть рассуждения' }}
+                      </div>
                     </div>
-                    <span class="text-sm text-white/70 font-['Roboto_Mono']">Агент печатает...</span>
+                    
+                    <!-- Tool call block -->
+                    <div v-else-if="block.type === 'tool_call'" class="tool-calls-block">
+                      <ToolCallMessage 
+                        :tool-call="block.data.toolCall"
+                        :tool-return="block.data.toolReturn"
+                        :tool-call-message="block.data"
+                        :tool-return-message="block.data.toolReturn"
+                      />
+                    </div>
+                    
+                    <!-- Assistant message block -->
+                    <div v-else-if="block.type === 'assistant'" class="response-block">
+                      <ChatMessage 
+                        :message="block.data" 
+                        :is-user="false" 
+                      />
+                    </div>
+                  </template>
+
+                  <!-- "Агент печатает..." indicator (for streaming and typing messages) -->
+                  <transition name="fade">
+                    <div v-if="(message.isStreaming || message.isTyping) && (!message.toolCalls || message.toolCalls.length === 0)" class="flex items-center gap-2 typing-indicator">
+                      <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
+                        <div class="w-2 h-2 bg-white/60 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-white/60 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                      </div>
+                      <span class="text-sm text-white/70 font-['Roboto_Mono']">Агент печатает...</span>
+                    </div>
+                  </transition>
+                  
+                  <!-- Reasoning block (for streaming messages with reasoning but no blocks) -->
+                  <div v-if="message.reasoning && !message.blocks" class="relative w-full mb-3 sm:mb-4 md:mb-6 cursor-pointer group reasoning-block" :data-reasoning-id="message.reasoning.id || `${message.id}-reasoning`">
+                    <div class="w-[2px] sm:w-[2.5px] md:w-[3.337px] bg-white absolute left-[-10px] sm:left-[-14px] md:left-[-18px] lg:left-[-22px] xl:left-[-30px] top-[2px] sm:top-[2.5px] md:top-[3.121px] bottom-0 transition-opacity group-hover:opacity-80"></div>
+                    <div 
+                      class="text-white/70 font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-[15px] leading-[1.3] sm:leading-[1.4] md:leading-[16.871px] tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.5px] overflow-hidden pr-2 transition-all duration-300 ease-in-out"
+                      :class="expandedReasoning[message.reasoning.id || `${message.id}-reasoning`] ? 'max-h-[400px] sm:max-h-[450px] md:max-h-[500px] overflow-y-auto scrollbar-hidden' : 'max-h-[30px] sm:max-h-[35px] md:max-h-[40px]'"
+                      @click="toggleReasoning(message.reasoning.id || `${message.id}-reasoning`)"
+                    >
+                      <p v-for="(line, index) in (typeof message.reasoning === 'string' ? message.reasoning : message.reasoning.reasoning || '').split('\n')" :key="index" :class="{ 'mb-0': index === (typeof message.reasoning === 'string' ? message.reasoning : message.reasoning.reasoning || '').split('\n').length - 1 }">
+                        {{ line }}
+                      </p>
+                    </div>
+                    <!-- Expand/Collapse indicator - only show if content overflows -->
+                    <div 
+                      v-if="reasoningOverflow[message.reasoning.id || `${message.id}-reasoning`]"
+                      class="mt-1 sm:mt-1.5 md:mt-2 text-white/50 text-[10px] sm:text-xs font-['Roboto_Mono'] hover:text-white/80 transition-colors"
+                      @click="toggleReasoning(message.reasoning.id || `${message.id}-reasoning`)"
+                    >
+                      {{ expandedReasoning[message.reasoning.id || `${message.id}-reasoning`] ? '▲ Свернуть' : '▼ Развернуть рассуждения' }}
+                    </div>
                   </div>
-                </transition>
-                
-                <!-- Response block (appears below "typing" text - streaming) -->
-                <div v-if="message.content" class="ml-3 sm:ml-4 md:ml-5 lg:ml-6 xl:ml-8">
-                  <ChatMessage 
-                    :key="`${message.id}-content`"
-                    :message="message" 
-                    :is-user="false" 
-                  />
+
+                  <!-- Response block (for streaming messages) -->
+                  <div v-if="message.content" class="response-block">
+                    <ChatMessage 
+                      :key="`${message.id}-content`"
+                      :message="message" 
+                      :is-user="false" 
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Loading Indicator (only when sending, not streaming) -->
-            <div v-if="isSending && !isStreaming" class="flex items-start gap-2.5 agent-loading">
+            <!-- Loading Indicator (only when sending, not streaming, and no typing indicator) -->
+            <div v-if="isSending && !isStreaming && !messages.some(msg => msg.isTyping)" class="flex items-start gap-2.5 agent-loading">
               <svg class="w-7 h-7 md:w-[29px] md:h-[29px] flex-shrink-0" viewBox="0 0 29 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18.8662 0.28418C19.0924 -0.163482 19.7599 -0.0594699 19.8398 0.435547L20.96 7.41602C21.0015 7.67502 21.2922 7.80964 21.5166 7.67383L28.2129 3.61426C28.633 3.3596 29.1382 3.77935 28.9658 4.23926L24.9316 14.9873C24.8666 15.1605 24.9398 15.3557 25.1025 15.4434L28.0957 17.0479C28.5464 17.2894 28.4111 17.9681 27.9023 18.0186L24.7803 18.3271C24.5153 18.3535 24.3642 18.6436 24.4941 18.876L27.1396 23.5928C27.3459 23.9604 27.0498 24.4071 26.6309 24.3604L19.4297 23.5566C19.3143 23.5439 19.1987 23.5864 19.1191 23.6709L14.0078 29.1123C13.7512 29.385 13.2984 29.3033 13.1533 28.958L10.3262 22.2314C10.2641 22.0843 10.1143 21.9928 9.95508 22.0059L6.38965 22.2988C5.93036 22.3362 5.65419 21.7998 5.95215 21.4482L8.00293 19.0312C8.15668 18.8496 8.10152 18.5715 7.88965 18.4629L0.28125 14.5693C-0.163676 14.3409 -0.0575712 13.6754 0.436523 13.5967L7.71484 12.4414C7.98322 12.3988 8.11564 12.0911 7.96191 11.8672L0.835938 1.5166C0.527945 1.06823 1.03181 0.508808 1.50977 0.768555L13.0205 7.03809C13.2323 7.15322 13.4962 7.03837 13.5557 6.80469L13.7783 5.9248C13.8854 5.50446 14.4317 5.39441 14.6934 5.74023L15.1865 6.39355C15.3515 6.61195 15.6882 6.58127 15.8115 6.33691L18.8662 0.28418ZM13.0039 14.1426C12.5957 14.1428 12.2531 14.4834 12.3867 14.8691C12.4956 15.1834 12.6754 15.4723 12.915 15.7119C13.331 16.1277 13.8952 16.3613 14.4834 16.3613C15.0716 16.3613 15.6358 16.1278 16.0518 15.7119C16.2913 15.4724 16.4703 15.1833 16.5791 14.8691C16.7127 14.4832 16.3703 14.1426 15.9619 14.1426H13.0039ZM19.4424 14.1426C19.0342 14.1428 18.6916 14.4834 18.8252 14.8691C18.934 15.1833 19.113 15.4723 19.3525 15.7119C19.7685 16.1279 20.3336 16.3613 20.9219 16.3613C21.51 16.3613 22.0743 16.1278 22.4902 15.7119C22.7298 15.4723 22.9087 15.1833 23.0176 14.8691C23.1512 14.4832 22.8088 14.1426 22.4004 14.1426H19.4424Z" fill="#F5F5F5"/>
               </svg>
@@ -192,9 +201,18 @@
         </div>
       </div>
 
+
       <!-- Chat Input (Outside chat block) -->
       <div class="chat-input-container w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[749px] flex items-center justify-center mb-4 sm:mb-6 md:mb-0">
-        <ChatInput @send-message="handleSendMessage" :is-streaming="isStreaming" />
+        <ChatInput 
+          @send-message="handleSendMessage" 
+          :is-streaming="isStreaming"
+          :context-usage="contextUsage"
+          :memory-stats="memoryStats"
+          :is-near-limit="isNearLimit"
+          :is-at-limit="isAtLimit"
+          :is-summarizing="isSummarizing"
+        />
       </div>
 
       <!-- User Info with Logout (Fixed Top Right) -->
@@ -268,11 +286,13 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import { useChat } from '../composables/useChat.js'
+import { useContextWindow } from '../composables/useContextWindow.js'
 import ChatMessage from '../components/ChatMessage.vue'
 import ChatInput from '../components/ChatInput.vue'
+import ToolCallMessage from '../components/ToolCallMessage.vue'
 
 const router = useRouter()
-const { userEmail, signOut } = useAuth()
+const { userEmail, signOut, lettaAgentId } = useAuth()
 const { 
   messages, 
   isLoading, 
@@ -286,11 +306,95 @@ const {
   resetMessages
 } = useChat()
 
+const {
+  contextUsage,
+  memoryStats,
+  isNearLimit,
+  isAtLimit,
+  fetchContextData,
+  checkAndSummarize,
+  startAutoRefresh
+} = useContextWindow()
+
 const messagesContainer = ref(null)
 const expandedReasoning = ref({})
+const reasoningOverflow = ref({})
+
 
 const toggleReasoning = (reasoningId) => {
   expandedReasoning.value[reasoningId] = !expandedReasoning.value[reasoningId]
+}
+
+// Function to check if reasoning content overflows its container
+const checkReasoningOverflow = (reasoningId, element) => {
+  if (!element) return false
+  
+  // Get the content element (first child div)
+  const contentElement = element.querySelector('div')
+  if (!contentElement) return false
+  
+  // Check if already expanded - always show button when expanded
+  const isExpanded = expandedReasoning.value[reasoningId]
+  if (isExpanded) return true
+  
+  // Method 1: Check scroll overflow (most reliable for mobile)
+  const hasScrollOverflow = contentElement.scrollHeight > contentElement.clientHeight
+  
+  // Method 2: Temporarily remove max-height and measure full height
+  const originalMaxHeight = contentElement.style.maxHeight
+  const originalOverflow = contentElement.style.overflow
+  
+  // Remove constraints to measure full height
+  contentElement.style.maxHeight = 'none'
+  contentElement.style.overflow = 'visible'
+  
+  const fullHeight = contentElement.scrollHeight
+  
+  // Restore original styles
+  contentElement.style.maxHeight = originalMaxHeight
+  contentElement.style.overflow = originalOverflow
+  
+  // Get expected collapsed height based on screen size and CSS classes
+  let expectedCollapsedHeight = 40 // default for xl and above
+  if (window.innerWidth < 640) expectedCollapsedHeight = 30 // sm
+  else if (window.innerWidth < 768) expectedCollapsedHeight = 35 // md
+  else if (window.innerWidth < 1024) expectedCollapsedHeight = 40 // lg
+  else expectedCollapsedHeight = 40 // xl and above
+  
+  const hasHeightOverflow = fullHeight > expectedCollapsedHeight
+  
+  // Use scroll overflow as primary method, height comparison as fallback
+  const hasOverflow = hasScrollOverflow || hasHeightOverflow
+  
+  
+  return hasOverflow
+}
+
+// Function to update overflow state for all reasoning blocks
+const updateReasoningOverflow = () => {
+  nextTick(() => {
+    // Add a small delay to ensure CSS is fully applied, especially on mobile
+    setTimeout(() => {
+      const reasoningBlocks = document.querySelectorAll('.reasoning-block')
+      reasoningBlocks.forEach(block => {
+        const reasoningId = block.getAttribute('data-reasoning-id')
+        if (reasoningId) {
+          reasoningOverflow.value[reasoningId] = checkReasoningOverflow(reasoningId, block)
+        }
+      })
+      
+      // Also check reasoning blocks in streaming messages
+      messages.value.forEach(message => {
+        if (message.reasoning && !message.blocks) {
+          const reasoningId = message.reasoning.id || `${message.id}-reasoning`
+          const block = document.querySelector(`[data-reasoning-id="${reasoningId}"]`)
+          if (block) {
+            reasoningOverflow.value[reasoningId] = checkReasoningOverflow(reasoningId, block)
+          }
+        }
+      })
+    }, 50) // Small delay to ensure proper CSS rendering
+  })
 }
 
 // Auto-scroll function
@@ -307,6 +411,7 @@ const scrollToBottom = (smooth = true) => {
 
 // Auto-scroll when messages change
 const shouldAutoScroll = ref(true)
+const isSummarizing = ref(false)
 
 // Watch for new messages and auto-scroll
 watch(() => messages.value.length, () => {
@@ -331,7 +436,6 @@ const handleScroll = () => {
 
 // Debug: Watch messages array for changes (combined with auto-scroll logic)
 watch(() => messages.value, (newMessages) => {
-  console.log('Messages array changed in ChatPage:', newMessages.length)
   
   // Auto-scroll logic for streaming messages
   if (shouldAutoScroll.value) {
@@ -344,28 +448,10 @@ watch(() => messages.value, (newMessages) => {
     }
   }
   
-  // Log all messages with their structure
-  newMessages.forEach((msg, idx) => {
-    if (msg.reasoning || msg.isStreaming) {
-      console.log(`Message ${idx}:`, {
-        id: msg.id,
-        role: msg.role,
-        hasReasoning: !!msg.reasoning,
-        hasAssistant: !!msg.assistant,
-        isStreaming: msg.isStreaming,
-        content: msg.content?.substring(0, 50)
-      })
-    }
-  })
+  // Update reasoning overflow state when messages change
+  updateReasoningOverflow()
   
-  const streamingMsg = newMessages.find(m => m.isStreaming)
-  if (streamingMsg) {
-    console.log('Streaming message found:', {
-      content: streamingMsg.content,
-      reasoning: streamingMsg.reasoning?.reasoning?.substring(0, 50),
-      isStreaming: streamingMsg.isStreaming
-    })
-  }
+  
 }, { deep: true, flush: 'post' })
 
 onMounted(() => {
@@ -380,13 +466,34 @@ onMounted(() => {
   // Add escape key listener for menu
   document.addEventListener('keydown', handleEscapeKey)
   
+  // Add resize listener for reasoning overflow updates with debouncing
+  let resizeTimeout = null
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(() => {
+      updateReasoningOverflow()
+    }, 150) // Debounce resize events
+  })
+  
   // Initial scroll to bottom
   nextTick(() => {
     scrollToBottom(false)
+    // Initial check for reasoning overflow
+    updateReasoningOverflow()
+    
+    // Additional check for mobile devices after CSS is fully loaded
+    if (window.innerWidth < 768) {
+      setTimeout(() => {
+        updateReasoningOverflow()
+      }, 200) // Additional delay for mobile CSS rendering
+    }
   })
   
-  // Agent info is already available from user profile (letta_agent_id)
-  // No need to make additional API calls
+  // Start auto-refresh for context window data
+  const cleanupAutoRefresh = startAutoRefresh(30000) // Refresh every 30 seconds
+  
+  // Store cleanup function for unmounting
+  window.contextWindowCleanup = cleanupAutoRefresh
 })
 
 onUnmounted(() => {
@@ -400,14 +507,37 @@ onUnmounted(() => {
   
   // Remove escape key listener for menu
   document.removeEventListener('keydown', handleEscapeKey)
+  
+  // Remove resize listener
+  window.removeEventListener('resize', updateReasoningOverflow)
+  
+  // Cleanup context window auto-refresh
+  if (window.contextWindowCleanup) {
+    window.contextWindowCleanup()
+    delete window.contextWindowCleanup
+  }
 })
 
 const handleSendMessage = async (messageText) => {
   if (!messageText || !messageText.trim()) return
 
   try {
+    // Check if context summarization is needed before sending
+    isSummarizing.value = true
+    try {
+      const wasSummarized = await checkAndSummarize()
+      if (wasSummarized) {
+        // Reload messages after summarization to reflect the changes
+        await loadMessages()
+      }
+    } catch (summarizationError) {
+      console.warn('Summarization failed, but continuing with message send:', summarizationError)
+      // Continue with sending message even if summarization failed
+    } finally {
+      isSummarizing.value = false
+    }
+
     await sendMessage(messageText)
-    console.log('Message sent successfully')
     
     // Ensure auto-scroll is enabled after sending message
     shouldAutoScroll.value = true
@@ -416,8 +546,17 @@ const handleSendMessage = async (messageText) => {
     nextTick(() => {
       scrollToBottom(true)
     })
+    
+    // Update context window data after sending message
+    setTimeout(() => {
+      // Only fetch if agent ID is available
+      if (lettaAgentId.value) {
+        fetchContextData()
+      }
+    }, 1000) // Small delay to ensure message is processed
   } catch (error) {
     console.error('Failed to send message:', error)
+    isSummarizing.value = false
     // Error is already handled in useChat composable
   }
 }
@@ -473,6 +612,7 @@ const handleEscapeKey = (event) => {
     isMenuOpen.value = false
   }
 }
+
 </script>
 
 <style scoped>

@@ -163,6 +163,7 @@ export function useChat() {
         role: 'agent',
         content: '',
         reasoning: null,
+        toolCalls: [],
         timestamp: new Date(),
         messageType: 'streaming',
         isStreaming: true
@@ -360,6 +361,34 @@ export function useChat() {
         }
         console.log('Updated streaming content, total length:', streamingMessage.value.content.length)
       }
+    } else if (parsedData.message_type === 'tool_call_message') {
+      // Handle tool call messages
+      console.log('Processing tool call message:', parsedData)
+      if (parsedData.tool_call) {
+        const toolCallMessage = messageUtils.convertToInternalFormat(parsedData)
+        if (toolCallMessage) {
+          // Add tool call to streaming message
+          if (!streamingMessage.value.toolCalls) {
+            streamingMessage.value.toolCalls = []
+          }
+          streamingMessage.value.toolCalls.push(toolCallMessage)
+        }
+      }
+    } else if (parsedData.message_type === 'tool_return_message') {
+      // Handle tool return messages
+      console.log('Processing tool return message:', parsedData)
+      if (parsedData.tool_return && streamingMessage.value.toolCalls) {
+        // Find matching tool call and add return value
+        const toolReturnMessage = messageUtils.convertToInternalFormat(parsedData)
+        if (toolReturnMessage) {
+          const matchingToolCall = streamingMessage.value.toolCalls.find(tc => 
+            tc.toolCallId === toolReturnMessage.toolCallId
+          )
+          if (matchingToolCall) {
+            matchingToolCall.toolReturn = toolReturnMessage
+          }
+        }
+      }
     } else if (parsedData.message_type === 'user_message') {
       // Replace temporary user message with real one
       const tempUserIndex = messages.value.findIndex(msg => msg.isTemporary && msg.role === 'user')
@@ -483,21 +512,21 @@ export function useChat() {
     streamingMessage.value = null
   }
 
-  // Send a message (legacy method - now uses streaming by default)
+  // Send a message (now uses non-streaming method by default)
   const sendMessage = async (content, options = {}) => {
-    // Use streaming by default unless explicitly disabled
-    const useStreaming = options.stream !== false
+    // Use streaming only if explicitly enabled
+    const useStreaming = options.stream === true
     delete options.stream // Remove stream option to avoid conflicts
     
     if (useStreaming) {
       return sendMessageStream(content, options)
     } else {
-      // Fallback to non-streaming method
+      // Use non-streaming method (load from history after sending)
       return sendMessageLegacy(content, options)
     }
   }
 
-  // Legacy send message method (non-streaming)
+  // Legacy send message method (non-streaming) - now default method
   const sendMessageLegacy = async (content, options = {}) => {
     if (!lettaAgentId.value) {
       throw new Error('No agent ID available')
@@ -511,7 +540,7 @@ export function useChat() {
       isSending.value = true
       error.value = null
 
-      // Add user message to local state immediately
+      // Add user message to local state immediately for better UX
       const userMessage = {
         id: `temp-${Date.now()}`,
         role: 'user',
@@ -523,50 +552,94 @@ export function useChat() {
       
       messages.value.push(userMessage)
 
-      // Send to API
-      const { data, error: apiError } = await chatApi.sendMessage(
-        lettaAgentId.value, 
-        content.trim(), 
+      // Add "agent typing" placeholder immediately
+      const agentTypingMessage = {
+        id: `typing-${Date.now()}`,
+        role: 'agent',
+        content: '',
+        reasoning: null,
+        toolCalls: [],
+        timestamp: new Date(),
+        messageType: 'typing',
+        isTyping: true
+      }
+      
+      messages.value.push(agentTypingMessage)
+
+      // Send to API using streaming endpoint (but don't process the stream)
+      const { endpoint, payload, error: prepError } = await chatApi.sendMessageStream(
+        lettaAgentId.value,
+        content.trim(),
         options
       )
 
-      if (apiError) {
-        throw new Error(apiError)
+      if (prepError) {
+        throw new Error(prepError)
       }
 
-      // Remove temporary message
-      const tempIndex = messages.value.findIndex(msg => msg.id === userMessage.id)
-      if (tempIndex !== -1) {
-        messages.value.splice(tempIndex, 1)
+      // Get auth token for the request
+      const token = session.value?.access_token
+      if (!token) {
+        throw new Error('No authentication token available')
       }
 
-      // Add real user message and any response from API
-      if (data) {
-        // Handle different response formats
-        if (Array.isArray(data)) {
-          const convertedMessages = data
-            .map(messageUtils.convertToInternalFormat)
-            .filter(msg => msg !== null)
-          messages.value.push(...convertedMessages)
-        } else if (data.id) {
-          const convertedMessage = messageUtils.convertToInternalFormat(data)
-          if (convertedMessage) {
-            messages.value.push(convertedMessage)
+      // Make the streaming request but don't process the stream
+      // This ensures the message is sent and processed on the backend
+      const baseURL = apiClient.baseURL
+      const url = `${baseURL}${endpoint}`
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'text/event-stream',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache'
+          },
+          body: JSON.stringify(payload)
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        // Read and discard the stream to ensure the request completes
+        const reader = response.body?.getReader()
+        if (reader) {
+          try {
+            while (true) {
+              const { done } = await reader.read()
+              if (done) break
+            }
+          } catch (streamError) {
+            console.warn('Error reading stream (ignored):', streamError)
           }
         }
+      } catch (requestError) {
+        console.error('Error making streaming request:', requestError)
+        throw requestError
       }
 
-      // Refresh messages to get latest state
+      // Wait a moment for the backend to process the message
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Refresh messages to get the complete conversation including the response
       await loadMessages({ limit: 50, order: 'desc' })
 
     } catch (err) {
       console.error('Error sending message:', err)
       error.value = err.message
       
-      // Remove temporary message on error
-      const tempIndex = messages.value.findIndex(msg => msg.isTemporary)
-      if (tempIndex !== -1) {
-        messages.value.splice(tempIndex, 1)
+      // Remove temporary messages on error
+      const tempUserIndex = messages.value.findIndex(msg => msg.id === userMessage.id)
+      if (tempUserIndex !== -1) {
+        messages.value.splice(tempUserIndex, 1)
+      }
+      
+      const typingIndex = messages.value.findIndex(msg => msg.isTyping)
+      if (typingIndex !== -1) {
+        messages.value.splice(typingIndex, 1)
       }
       
       throw err
