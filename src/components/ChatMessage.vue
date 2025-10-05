@@ -255,4 +255,33 @@ const toggleReasoning = () => {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* Markdown headers */
+:deep(.markdown-h1) {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 16px 0 12px 0;
+  line-height: 1.3;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 8px;
+}
+
+:deep(.markdown-h2) {
+  font-size: 1.3em;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 14px 0 10px 0;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 6px;
+}
+
+:deep(.markdown-h3) {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 12px 0 8px 0;
+  line-height: 1.4;
+}
 </style>

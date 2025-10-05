@@ -34,6 +34,11 @@ export function markdownToHtml(markdown) {
     return `<pre class="code-block"><code>${trimmedCode}</code></pre>`
   })
   
+  // Convert headers (### Header) to HTML headers
+  html = html.replace(/^### (.*$)/gim, '<h3 class="markdown-h3">$1</h3>')
+  html = html.replace(/^## (.*$)/gim, '<h2 class="markdown-h2">$1</h2>')
+  html = html.replace(/^# (.*$)/gim, '<h1 class="markdown-h1">$1</h1>')
+  
   // Convert **bold** to <strong>bold</strong>
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
   
@@ -43,7 +48,7 @@ export function markdownToHtml(markdown) {
   // Convert `code` to <code>code</code> (but not if it's already inside a code block)
   html = html.replace(/`([^`]+?)`/g, '<code class="inline-code">$1</code>')
   
-  // Convert line breaks to <br> tags (but not inside code blocks)
+  // Convert line breaks to <br> tags (but not inside code blocks or headers)
   html = html.replace(/\n/g, '<br>')
   
   return html
