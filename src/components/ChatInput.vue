@@ -8,7 +8,7 @@
         type="text" 
         :placeholder="isSummarizing ? 'Суммаризация контекста...' : (isStreaming ? 'Агент печатает...' : 'text,photo,video,code')"
         :disabled="isStreaming"
-        class="flex-1 bg-transparent text-[#4E4E4E] font-['Roboto_Mono'] text-xs sm:text-sm md:text-base lg:text-lg xl:text-[16.406px] font-normal tracking-[1.5px] sm:tracking-[2px] md:tracking-[2.5px] lg:tracking-[3px] xl:tracking-[3.4452px] lowercase outline-none border-none placeholder:text-[#4E4E4E] leading-[2] disabled:opacity-50 disabled:cursor-not-allowed"
+        class="flex-1 bg-transparent text-white font-['Roboto_Mono'] text-xs sm:text-sm md:text-base lg:text-lg xl:text-[16.406px] font-normal tracking-[1.5px] sm:tracking-[2px] md:tracking-[2.5px] lg:tracking-[3px] xl:tracking-[3.4452px] lowercase outline-none border-none placeholder:text-[#4E4E4E] leading-[2] disabled:opacity-50 disabled:cursor-not-allowed"
         @keydown.enter="handleSend"
         @keydown.escape="clearInput"
       />
