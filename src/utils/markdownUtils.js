@@ -28,16 +28,22 @@ export function markdownToHtml(markdown) {
   
   let html = markdown
   
+  // Convert code blocks (```...```) to <pre><code> blocks
+  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    const trimmedCode = code.trim()
+    return `<pre class="code-block"><code>${trimmedCode}</code></pre>`
+  })
+  
   // Convert **bold** to <strong>bold</strong>
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
   
   // Convert *italic* to <em>italic</em> (but not if it's part of **bold**)
   html = html.replace(/(?<!\*)\*(?!\*)([^*]+?)\*(?!\*)/g, '<em>$1</em>')
   
-  // Convert `code` to <code>code</code>
+  // Convert `code` to <code>code</code> (but not if it's already inside a code block)
   html = html.replace(/`([^`]+?)`/g, '<code class="inline-code">$1</code>')
   
-  // Convert line breaks to <br> tags
+  // Convert line breaks to <br> tags (but not inside code blocks)
   html = html.replace(/\n/g, '<br>')
   
   return html

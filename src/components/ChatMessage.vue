@@ -230,4 +230,29 @@ const toggleReasoning = () => {
   color: #a8ffa3;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+:deep(.code-block) {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+  overflow-x: auto;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+:deep(.code-block code) {
+  background: none;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  color: #a8ffa3;
+  font-family: inherit;
+  font-size: inherit;
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 </style>
