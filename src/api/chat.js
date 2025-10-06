@@ -88,6 +88,68 @@ export const chatApi = {
     }
   },
 
+  // Send a message directly to messages endpoint (non-streaming)
+  async sendMessageToMessages(agentId, message, options = {}) {
+    try {
+      const {
+        group_id = null,
+        max_steps = 50,
+        use_assistant_message = true,
+        assistant_message_tool_name = 'send_message',
+        assistant_message_tool_kwarg = 'message',
+        include_return_message_types = null,
+        enable_thinking = true,
+        background = false
+      } = options
+
+      // Build query parameters
+      const params = new URLSearchParams()
+      if (group_id) params.append('group_id', group_id)
+      if (max_steps) params.append('max_steps', max_steps.toString())
+      if (use_assistant_message !== undefined) params.append('use_assistant_message', use_assistant_message.toString())
+      if (assistant_message_tool_name) params.append('assistant_message_tool_name', assistant_message_tool_name)
+      if (assistant_message_tool_kwarg) params.append('assistant_message_tool_kwarg', assistant_message_tool_kwarg)
+      if (include_return_message_types) params.append('include_return_message_types', include_return_message_types.join(','))
+      if (enable_thinking !== undefined) params.append('enable_thinking', enable_thinking.toString())
+      if (background !== undefined) params.append('background', background.toString())
+
+      const queryString = params.toString()
+      const endpoint = `/api/v1/letta/agents/${agentId}/messages${queryString ? `?${queryString}` : ''}`
+
+      // Prepare payload for non-streaming request
+      const payload = {
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: message
+              }
+            ]
+          }
+        ]
+      }
+
+      const { data, error } = await apiClient.post(endpoint, payload)
+      
+      if (error) {
+        throw error
+      }
+
+      return {
+        data,
+        error: null
+      }
+    } catch (error) {
+      console.error('Error sending message to messages endpoint:', error)
+      return {
+        data: null,
+        error: error.message || 'Failed to send message'
+      }
+    }
+  },
+
   // Send a message with streaming response using SSE
   async sendMessageStream(agentId, message, options = {}) {
     try {

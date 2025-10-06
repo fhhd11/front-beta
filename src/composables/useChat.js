@@ -566,59 +566,15 @@ export function useChat() {
       
       messages.value.push(agentTypingMessage)
 
-      // Send to API using streaming endpoint (but don't process the stream)
-      const { endpoint, payload, error: prepError } = await chatApi.sendMessageStream(
-        lettaAgentId.value,
-        content.trim(),
+      // Send to API using non-streaming messages endpoint
+      const { data, error: apiError } = await chatApi.sendMessageToMessages(
+        lettaAgentId.value, 
+        content.trim(), 
         options
       )
 
-      if (prepError) {
-        throw new Error(prepError)
-      }
-
-      // Get auth token for the request
-      const token = session.value?.access_token
-      if (!token) {
-        throw new Error('No authentication token available')
-      }
-
-      // Make the streaming request but don't process the stream
-      // This ensures the message is sent and processed on the backend
-      const baseURL = apiClient.baseURL
-      const url = `${baseURL}${endpoint}`
-      
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Accept': 'text/event-stream',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'Cache-Control': 'no-cache'
-          },
-          body: JSON.stringify(payload)
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        // Read and discard the stream to ensure the request completes
-        const reader = response.body?.getReader()
-        if (reader) {
-          try {
-            while (true) {
-              const { done } = await reader.read()
-              if (done) break
-            }
-          } catch (streamError) {
-            console.warn('Error reading stream (ignored):', streamError)
-          }
-        }
-      } catch (requestError) {
-        console.error('Error making streaming request:', requestError)
-        throw requestError
+      if (apiError) {
+        throw new Error(apiError)
       }
 
       // Wait a moment for the backend to process the message
