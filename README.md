@@ -1,4 +1,4 @@
-# etrnl.chat - AI Chat Platform Frontend
+# etrl.chat - AI Chat Platform Frontend
 
 Современный интерфейс для чата с AI-агентом, реализованный на Vue 3 с интеграцией Supabase Auth и бэкенда.
 
