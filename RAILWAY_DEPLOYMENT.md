@@ -54,7 +54,7 @@ VITE_API_BASE_URL=https://your-backend-api.com
      VITE_SUPABASE_URL=https://your-project.supabase.co
      VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
      VITE_API_BASE_URL=https://your-backend-api.com
-     VITE_APP_NAME=etrnl.chat
+     VITE_APP_NAME=etrl.chat
      VITE_APP_VERSION=1.0.0
      ```
    - ⚠️ **Все переменные с префиксом `VITE_` должны быть доступны во время сборки**

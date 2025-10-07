@@ -1,4 +1,4 @@
-# Настройка Supabase Auth для etrnl.chat
+# Настройка Supabase Auth для etrl.chat
 
 ## 🚀 Быстрый старт
 
@@ -50,7 +50,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 ### Безопасность
 
-- 🔒 Токены хранятся в `localStorage` с ключом `etrnl-chat-auth-token`
+- 🔒 Токены хранятся в `localStorage` с ключом `etrl-chat-auth-token`
 - 🔒 Автоматическое обновление токенов
 - 🔒 Обработка ошибок и fallback для localStorage
 - 🔒 Защита маршрутов через router guards

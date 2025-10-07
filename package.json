@@ -1,7 +1,7 @@
 {
-  "name": "etrnl-chat-frontend",
+  "name": "etrl-chat-frontend",
   "version": "1.0.0",
-  "description": "etrnl.chat - AI Chat Platform Frontend",
+  "description": "etrl.chat - AI Chat Platform Frontend",
   "type": "module",
   "scripts": {
     "dev": "vite",

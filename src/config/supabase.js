@@ -14,7 +14,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     // Detect session in URL
     detectSessionInUrl: true,
     // Storage key for session
-    storageKey: 'etrnl-chat-auth-token',
+    storageKey: 'etrl-chat-auth-token',
     // Storage implementation
     storage: {
       getItem: (key) => {
