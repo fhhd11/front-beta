@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000
 // Health check endpoint
 app.get('/health', (req, res) => {
   console.log('Health check requested')
-  res.status(200).send('OK')
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() })
 })
 
 // Serve static files from dist directory
