@@ -595,11 +595,6 @@ export function useChat() {
 
       console.log('Received response from Letta API:', data)
 
-      // Remove temporary messages first
-      messages.value = messages.value.filter(msg => 
-        !msg.isTemporary && !msg.isTyping
-      )
-
       // Process the response data directly instead of reloading all messages
       // Letta API returns: {messages: [...], stop_reason: {...}, usage: {...}}
       if (data && data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
@@ -620,7 +615,21 @@ export function useChat() {
         
         console.log('Processed', processedMessages.length, 'message groups')
         
-        // Add new messages to existing messages
+        // Keep the temporary user message but remove the temporary flag
+        // The user message is not returned by Letta API, so we keep our local version
+        messages.value = messages.value.map(msg => {
+          if (msg.isTemporary && msg.role === 'user') {
+            // Convert temporary user message to permanent
+            const { isTemporary, ...permanentMsg } = msg
+            return permanentMsg
+          }
+          return msg
+        })
+        
+        // Remove only typing indicator
+        messages.value = messages.value.filter(msg => !msg.isTyping)
+        
+        // Add new agent messages (reasoning + assistant)
         messages.value.push(...processedMessages)
       } else {
         console.warn('No messages in response or empty array, falling back to loadMessages')
