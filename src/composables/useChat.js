@@ -601,11 +601,12 @@ export function useChat() {
       )
 
       // Process the response data directly instead of reloading all messages
-      if (data && Array.isArray(data)) {
-        console.log('Processing', data.length, 'messages from response')
+      // Letta API returns: {messages: [...], stop_reason: {...}, usage: {...}}
+      if (data && data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+        console.log('Processing', data.messages.length, 'messages from response')
         
         // Convert Letta messages to internal format
-        const newMessages = data
+        const newMessages = data.messages
           .map(messageUtils.convertToInternalFormat)
           .filter(msg => msg !== null)
         
@@ -622,7 +623,8 @@ export function useChat() {
         // Add new messages to existing messages
         messages.value.push(...processedMessages)
       } else {
-        console.warn('No messages in response, falling back to loadMessages')
+        console.warn('No messages in response or empty array, falling back to loadMessages')
+        console.warn('Response structure:', { hasData: !!data, hasMessages: !!(data?.messages), isArray: Array.isArray(data?.messages), length: data?.messages?.length })
         // Fallback: reload messages if response doesn't contain expected data
         await loadMessages({ limit: 50, order: 'desc' })
       }
