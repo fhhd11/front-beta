@@ -593,17 +593,39 @@ export function useChat() {
         throw new Error(apiError)
       }
 
-      // Wait a moment for the backend to process the message
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('Received response from Letta API:', data)
 
-      // Refresh messages to get the complete conversation including the response
-      await loadMessages({ limit: 50, order: 'desc' })
-
-      // Remove temporary messages after successful load
-      // Filter out temporary and typing messages
+      // Remove temporary messages first
       messages.value = messages.value.filter(msg => 
         !msg.isTemporary && !msg.isTyping
       )
+
+      // Process the response data directly instead of reloading all messages
+      if (data && Array.isArray(data)) {
+        console.log('Processing', data.length, 'messages from response')
+        
+        // Convert Letta messages to internal format
+        const newMessages = data
+          .map(messageUtils.convertToInternalFormat)
+          .filter(msg => msg !== null)
+        
+        console.log('Converted', newMessages.length, 'messages')
+        
+        // Sort by timestamp
+        const sortedMessages = messageUtils.sortByTimestamp(newMessages, 'asc')
+        
+        // Process messages to group reasoning + assistant
+        const processedMessages = messageUtils.processMessages(sortedMessages)
+        
+        console.log('Processed', processedMessages.length, 'message groups')
+        
+        // Add new messages to existing messages
+        messages.value.push(...processedMessages)
+      } else {
+        console.warn('No messages in response, falling back to loadMessages')
+        // Fallback: reload messages if response doesn't contain expected data
+        await loadMessages({ limit: 50, order: 'desc' })
+      }
 
     } catch (err) {
       console.error('Error sending message:', err)
