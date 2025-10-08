@@ -499,17 +499,27 @@ export function useChat() {
       }
     }
     
+    // Always cleanup, even if no streaming message
     cleanupStreaming()
   }
 
   // Clean up streaming resources
   const cleanupStreaming = () => {
+    console.log('Cleaning up streaming resources')
+    
     if (sseClient.value) {
-      sseClient.value.disconnect()
+      try {
+        sseClient.value.disconnect()
+      } catch (error) {
+        console.error('Error disconnecting SSE client:', error)
+      }
       sseClient.value = null
     }
+    
     isStreaming.value = false
     streamingMessage.value = null
+    
+    console.log('Streaming cleanup complete')
   }
 
   // Send a message (now uses non-streaming method by default)
@@ -536,13 +546,18 @@ export function useChat() {
       throw new Error('Message content is required')
     }
 
+    // Variables to track temporary message IDs
+    let tempUserId = null
+    let typingId = null
+
     try {
       isSending.value = true
       error.value = null
 
       // Add user message to local state immediately for better UX
+      tempUserId = `temp-${Date.now()}`
       const userMessage = {
-        id: `temp-${Date.now()}`,
+        id: tempUserId,
         role: 'user',
         content: content.trim(),
         timestamp: new Date(),
@@ -553,8 +568,9 @@ export function useChat() {
       messages.value.push(userMessage)
 
       // Add "agent typing" placeholder immediately
+      typingId = `typing-${Date.now()}`
       const agentTypingMessage = {
-        id: `typing-${Date.now()}`,
+        id: typingId,
         role: 'agent',
         content: '',
         reasoning: null,
@@ -583,20 +599,20 @@ export function useChat() {
       // Refresh messages to get the complete conversation including the response
       await loadMessages({ limit: 50, order: 'desc' })
 
+      // Remove temporary messages after successful load
+      // Filter out temporary and typing messages
+      messages.value = messages.value.filter(msg => 
+        !msg.isTemporary && !msg.isTyping
+      )
+
     } catch (err) {
       console.error('Error sending message:', err)
       error.value = err.message
       
       // Remove temporary messages on error
-      const tempUserIndex = messages.value.findIndex(msg => msg.id === userMessage.id)
-      if (tempUserIndex !== -1) {
-        messages.value.splice(tempUserIndex, 1)
-      }
-      
-      const typingIndex = messages.value.findIndex(msg => msg.isTyping)
-      if (typingIndex !== -1) {
-        messages.value.splice(typingIndex, 1)
-      }
+      messages.value = messages.value.filter(msg => 
+        msg.id !== tempUserId && msg.id !== typingId
+      )
       
       throw err
     } finally {
@@ -655,8 +671,10 @@ export function useChat() {
   }
 
   // Auto-load messages when agent ID changes
-  watch(lettaAgentId, (newAgentId) => {
-    if (newAgentId && isAuthenticated.value) {
+  watch(lettaAgentId, (newAgentId, oldAgentId) => {
+    // Only load if agent ID actually changed or is being set for the first time
+    if (newAgentId && isAuthenticated.value && newAgentId !== oldAgentId) {
+      console.log('Agent ID changed, loading messages:', { newAgentId, oldAgentId })
       clearMessages()
       loadMessages()
     }

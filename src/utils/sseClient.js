@@ -96,8 +96,19 @@ export class SSEClient {
         const { done, value } = await this.reader.read()
         
         if (done) {
-          console.log('SSE stream ended')
+          console.log('SSE stream ended naturally')
           this.isConnected = false
+          
+          // Trigger 'done' event when stream ends
+          const doneCallbacks = this.listeners.get('done') || []
+          doneCallbacks.forEach(callback => {
+            try {
+              callback('[DONE]', { type: 'done' })
+            } catch (callbackError) {
+              console.error('Error in done callback:', callbackError)
+            }
+          })
+          
           break
         }
 
@@ -120,6 +131,12 @@ export class SSEClient {
           console.error('Error in error callback:', callbackError)
         }
       })
+    } finally {
+      // Always ensure we're marked as disconnected
+      if (this.isConnected) {
+        console.log('SSE stream processing complete, marking as disconnected')
+        this.isConnected = false
+      }
     }
   }
 
