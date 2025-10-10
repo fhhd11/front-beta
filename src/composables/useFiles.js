@@ -42,7 +42,10 @@ export function useFiles() {
       // Try to get existing source
       const { data: existingSource, error: getError } = await filesApi.getSourceByName(sourceName)
 
+      console.log('getSourceByName result:', { existingSource, getError })
+
       if (existingSource && !getError) {
+        console.log('Existing source found:', existingSource)
         userSource.value = existingSource
         return existingSource
       }
@@ -83,6 +86,13 @@ export function useFiles() {
 
       // Ensure source exists
       const source = await ensureUserSource()
+
+      console.log('Source from ensureUserSource:', source)
+      console.log('Source ID:', source?.id)
+
+      if (!source || !source.id) {
+        throw new Error('Source ID is missing')
+      }
 
       // Get files from source
       const { data: sourceFiles, error: filesError } = await filesApi.getSourceFiles(source.id)
