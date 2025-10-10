@@ -175,6 +175,10 @@ class ApiClient {
             console.error('Error details (array):', errorData.detail)
             errorData.detail.forEach((err, index) => {
               console.error(`  Error ${index + 1}:`, err)
+              if (err.loc) {
+                console.error(`    Missing field location:`, err.loc)
+                console.error(`    Field path:`, err.loc.join(' -> '))
+              }
             })
           } else {
             console.error('Error detail:', errorData.detail)
