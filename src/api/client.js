@@ -165,9 +165,10 @@ class ApiClient {
         console.error('API Error Response:', {
           status: response.status,
           statusText: response.statusText,
-          errorData,
+          errorData: JSON.parse(JSON.stringify(errorData)),
           endpoint
         })
+        console.error('Error detail:', errorData.detail || errorData.message || 'No detail provided')
         
         let errorMessage = errorData.message || errorData.detail || `HTTP ${response.status}: ${response.statusText}`
         
