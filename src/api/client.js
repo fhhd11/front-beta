@@ -168,7 +168,22 @@ class ApiClient {
           errorData: JSON.parse(JSON.stringify(errorData)),
           endpoint
         })
-        console.error('Error detail:', errorData.detail || errorData.message || 'No detail provided')
+        
+        // Log detail field (might be array or string)
+        if (errorData.detail) {
+          if (Array.isArray(errorData.detail)) {
+            console.error('Error details (array):', errorData.detail)
+            errorData.detail.forEach((err, index) => {
+              console.error(`  Error ${index + 1}:`, err)
+            })
+          } else {
+            console.error('Error detail:', errorData.detail)
+          }
+        } else if (errorData.message) {
+          console.error('Error message:', errorData.message)
+        } else {
+          console.error('No detail provided in error response')
+        }
         
         let errorMessage = errorData.message || errorData.detail || `HTTP ${response.status}: ${response.statusText}`
         
