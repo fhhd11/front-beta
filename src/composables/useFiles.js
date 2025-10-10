@@ -46,8 +46,14 @@ export function useFiles() {
 
       if (existingSource && !getError) {
         console.log('Existing source found:', existingSource)
-        userSource.value = existingSource
-        return existingSource
+        
+        // API returns just the source ID as a string, wrap it in an object
+        const sourceObj = typeof existingSource === 'string' 
+          ? { id: existingSource, name: sourceName }
+          : existingSource
+        
+        userSource.value = sourceObj
+        return sourceObj
       }
 
       // Create new source if it doesn't exist
