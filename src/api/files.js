@@ -265,8 +265,8 @@ export const filesApi = {
         metadata,
         // Use default embedding config if not provided
         embedding_config: embedding_config || {
-          embedding_model: 'text-embedding-ada-002',
-          embedding_dim: 1536,
+          embedding_model: 'gemini-embedding-001',
+          embedding_dim: 768,
           embedding_chunk_size: 300
         }
       }
