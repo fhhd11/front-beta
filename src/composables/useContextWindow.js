@@ -81,12 +81,23 @@ export function useContextWindow() {
             return false
           }
 
+          // Check if we have enough messages to summarize
+          if (memoryStats.value && memoryStats.value.messages < 15) {
+            console.warn(`Not enough messages to summarize (${memoryStats.value.messages} < 15). Skipping summarization.`)
+            return false
+          }
+
           try {
             // Используем query параметры в URL для GET-подобного POST запроса
             const endpoint = `/api/v1/letta/agents/${lettaAgentId.value}/summarize?max_message_length=${maxMessageLength}`
             const { error: apiError } = await apiClient.post(endpoint, {})
 
             if (apiError) {
+              // If error is about not finding assistant message, just skip summarization
+              if (apiError.message && apiError.message.includes('No assistant message found')) {
+                console.warn('Summarization skipped: not enough assistant messages in range')
+                return false
+              }
               throw apiError
             }
             
@@ -104,6 +115,12 @@ export function useContextWindow() {
         // Check if summarization is needed and perform it
         const checkAndSummarize = async () => {
           if (!contextUsage.value) {
+            return false
+          }
+
+          // Check if we have enough messages before attempting summarization
+          if (memoryStats.value && memoryStats.value.messages < 15) {
+            console.log(`Skipping summarization check: only ${memoryStats.value.messages} messages (need at least 15)`)
             return false
           }
 
