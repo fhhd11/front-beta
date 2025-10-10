@@ -263,9 +263,11 @@ export const filesApi = {
         name,
         description,
         metadata,
-        // Use default embedding config if not provided
+        // Use minimal embedding config to inherit from agent settings
+        // Gemini accessed via OpenAI-compatible proxy
         embedding_config: embedding_config || {
-          embedding_model: 'gemini-embedding-001',
+          embedding_endpoint_type: 'openai',
+          embedding_model: 'text-embedding-004',
           embedding_dim: 768,
           embedding_chunk_size: 300
         }
