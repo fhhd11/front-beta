@@ -27,7 +27,7 @@ export const filesApi = {
       if (order_by) params.append('order_by', order_by)
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/folders${queryString ? `?${queryString}` : ''}`
+      const endpoint = `/api/v1/letta/folders/${queryString ? `?${queryString}` : ''}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -124,7 +124,7 @@ export const filesApi = {
         metadata
       }
 
-      const endpoint = `/api/v1/letta/folders`
+      const endpoint = `/api/v1/letta/folders/`
       
       const { data, error } = await apiClient.post(endpoint, payload)
       
@@ -221,7 +221,7 @@ export const filesApi = {
       if (order_by) params.append('order_by', order_by)
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/sources${queryString ? `?${queryString}` : ''}`
+      const endpoint = `/api/v1/letta/sources/${queryString ? `?${queryString}` : ''}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -264,7 +264,7 @@ export const filesApi = {
         metadata
       }
 
-      const endpoint = `/api/v1/letta/sources`
+      const endpoint = `/api/v1/letta/sources/`
       
       const { data, error } = await apiClient.post(endpoint, payload)
       
@@ -330,7 +330,7 @@ export const filesApi = {
       if (offset) params.append('offset', offset.toString())
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/folders/${folderId}/files${queryString ? `?${queryString}` : ''}`
+      const endpoint = `/api/v1/letta/folders/${folderId}/files/${queryString ? `?${queryString}` : ''}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -367,7 +367,7 @@ export const filesApi = {
       if (offset) params.append('offset', offset.toString())
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/sources/${sourceId}/files${queryString ? `?${queryString}` : ''}`
+      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${queryString ? `?${queryString}` : ''}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -406,7 +406,7 @@ export const filesApi = {
         formData.append('metadata', JSON.stringify(metadata))
       }
 
-      const endpoint = `/api/v1/letta/sources/${sourceId}/upload`
+      const endpoint = `/api/v1/letta/sources/${sourceId}/upload/`
       
       // Use special form data upload method
       const { data, error } = await apiClient.postFormData(endpoint, formData)
@@ -488,7 +488,7 @@ export const filesApi = {
    */
   async attachSourceToAgent(agentId, sourceId) {
     try {
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}`
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}/`
       
       const { data, error } = await apiClient.post(endpoint, {})
       
@@ -542,7 +542,7 @@ export const filesApi = {
    */
   async getAgentSources(agentId) {
     try {
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources`
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources/`
       
       const { data, error } = await apiClient.get(endpoint)
       
