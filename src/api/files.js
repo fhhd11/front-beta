@@ -422,14 +422,18 @@ export const filesApi = {
       } = options
 
       const formData = new FormData()
-      // Try 'files' as field name (Letta API might expect this)
-      formData.append('files', file, file.name)
+      // Use 'file' as field name
+      formData.append('file', file, file.name)
       
       console.log('Uploading file:', {
         sourceId,
         fileName: file.name,
         fileSize: file.size,
-        fileType: file.type
+        fileType: file.type,
+        formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
+          key,
+          value: value instanceof File ? `File: ${value.name}` : value
+        }))
       })
 
       // Don't use trailing slash for POST to avoid 307 redirect

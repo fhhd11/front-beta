@@ -161,7 +161,15 @@ class ApiClient {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         
-        let errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        // Log error details for debugging
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          endpoint
+        })
+        
+        let errorMessage = errorData.message || errorData.detail || `HTTP ${response.status}: ${response.statusText}`
         
         switch (response.status) {
           case HTTP_STATUS.UNAUTHORIZED:
@@ -174,7 +182,8 @@ class ApiClient {
             errorMessage = ERROR_MESSAGES.NOT_FOUND
             break
           case HTTP_STATUS.UNPROCESSABLE_ENTITY:
-            errorMessage = ERROR_MESSAGES.VALIDATION_ERROR
+            // Keep detailed error message for 422
+            errorMessage = errorData.detail || errorData.message || ERROR_MESSAGES.VALIDATION_ERROR
             break
           case HTTP_STATUS.INTERNAL_SERVER_ERROR:
           case HTTP_STATUS.BAD_GATEWAY:
