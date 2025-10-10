@@ -128,6 +128,80 @@ class ApiClient {
       ...options
     })
   }
+
+  // POST request with FormData (for file uploads)
+  async postFormData(endpoint, formData, options = {}) {
+    const url = `${this.baseURL}${endpoint}`
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available')
+      }
+
+      // Don't set Content-Type for FormData - browser will set it with boundary
+      const headers = {
+        'Authorization': `Bearer ${session.access_token}`
+      }
+      
+      const config = {
+        method: 'POST',
+        body: formData,
+        headers: {
+          ...headers,
+          ...options.headers
+        },
+        ...options
+      }
+
+      const response = await fetch(url, config)
+      
+      // Handle non-2xx responses
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        
+        let errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        
+        switch (response.status) {
+          case HTTP_STATUS.UNAUTHORIZED:
+            errorMessage = ERROR_MESSAGES.UNAUTHORIZED
+            break
+          case HTTP_STATUS.FORBIDDEN:
+            errorMessage = ERROR_MESSAGES.FORBIDDEN
+            break
+          case HTTP_STATUS.NOT_FOUND:
+            errorMessage = ERROR_MESSAGES.NOT_FOUND
+            break
+          case HTTP_STATUS.UNPROCESSABLE_ENTITY:
+            errorMessage = ERROR_MESSAGES.VALIDATION_ERROR
+            break
+          case HTTP_STATUS.INTERNAL_SERVER_ERROR:
+          case HTTP_STATUS.BAD_GATEWAY:
+          case HTTP_STATUS.SERVICE_UNAVAILABLE:
+            errorMessage = ERROR_MESSAGES.SERVER_ERROR
+            break
+        }
+        
+        throw new ApiError(errorMessage, response.status, errorData)
+      }
+
+      // Parse JSON response
+      const data = await response.json()
+      return { data, error: null }
+      
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error
+      }
+      
+      throw new ApiError(
+        error.message || ERROR_MESSAGES.NETWORK_ERROR,
+        0,
+        { originalError: error }
+      )
+    }
+  }
 }
 
 // Custom API Error class

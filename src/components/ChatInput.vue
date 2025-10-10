@@ -2,6 +2,9 @@
   <div class="flex items-center justify-end gap-2 sm:gap-3 md:gap-[10.314px] w-full h-12 sm:h-12 md:h-14 lg:h-16 xl:h-[72px]" style="max-width: 749px; max-height: 72px;">
     <!-- Единый контейнер композера с input и кнопкой -->
     <div class="flex items-center gap-2 sm:gap-3 md:gap-[10.314px] bg-gradient-to-r from-[rgba(0,0,0,0.65)] from-[75.481%] to-[rgba(25,25,25,0.475)] rounded-[10px] sm:rounded-[12px] md:rounded-[14px] lg:rounded-[15.471px] backdrop-blur-[77.2px] px-3 sm:px-4 md:px-6 lg:px-8 xl:px-[26.816px] py-3 sm:py-3 md:py-4 lg:py-5 xl:py-[15.471px] h-full w-full will-change-auto">
+      <!-- File Manager Button -->
+      <FileManager :isDisabled="isStreaming" />
+      
       <input 
         v-model="messageInput"
         ref="inputRef"
@@ -125,6 +128,7 @@
 
 <script setup>
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import FileManager from './FileManager.vue'
 
 const emit = defineEmits(['send-message'])
 
