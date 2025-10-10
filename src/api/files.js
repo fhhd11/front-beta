@@ -422,12 +422,15 @@ export const filesApi = {
       } = options
 
       const formData = new FormData()
-      formData.append('file', file)
+      // Try 'files' as field name (Letta API might expect this)
+      formData.append('files', file, file.name)
       
-      // Add metadata if provided
-      if (Object.keys(metadata).length > 0) {
-        formData.append('metadata', JSON.stringify(metadata))
-      }
+      console.log('Uploading file:', {
+        sourceId,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      })
 
       // Don't use trailing slash for POST to avoid 307 redirect
       const endpoint = `/api/v1/letta/sources/${sourceId}/upload`
