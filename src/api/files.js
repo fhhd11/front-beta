@@ -27,7 +27,10 @@ export const filesApi = {
       if (order_by) params.append('order_by', order_by)
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/folders/${queryString ? `?${queryString}` : ''}`
+      // Don't add trailing slash when there are query params to avoid 307 redirect
+      const endpoint = queryString
+        ? `/api/v1/letta/folders?${queryString}`
+        : `/api/v1/letta/folders/`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -221,7 +224,10 @@ export const filesApi = {
       if (order_by) params.append('order_by', order_by)
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/sources/${queryString ? `?${queryString}` : ''}`
+      // Don't add trailing slash when there are query params to avoid 307 redirect
+      const endpoint = queryString
+        ? `/api/v1/letta/sources?${queryString}`
+        : `/api/v1/letta/sources/`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -339,7 +345,10 @@ export const filesApi = {
       if (offset) params.append('offset', offset.toString())
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/folders/${folderId}/files/${queryString ? `?${queryString}` : ''}`
+      // Don't add trailing slash when there are query params to avoid 307 redirect
+      const endpoint = queryString
+        ? `/api/v1/letta/folders/${folderId}/files?${queryString}`
+        : `/api/v1/letta/folders/${folderId}/files/`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -376,7 +385,10 @@ export const filesApi = {
       if (offset) params.append('offset', offset.toString())
 
       const queryString = params.toString()
-      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${queryString ? `?${queryString}` : ''}`
+      // Don't add trailing slash when there are query params to avoid 307 redirect
+      const endpoint = queryString 
+        ? `/api/v1/letta/sources/${sourceId}/files?${queryString}`
+        : `/api/v1/letta/sources/${sourceId}/files/`
       
       const { data, error } = await apiClient.get(endpoint)
       
