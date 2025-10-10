@@ -127,7 +127,8 @@ export const filesApi = {
         metadata
       }
 
-      const endpoint = `/api/v1/letta/folders/`
+      // Don't use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/folders`
       
       const { data, error } = await apiClient.post(endpoint, payload)
       
@@ -279,7 +280,8 @@ export const filesApi = {
         }
       }
 
-      const endpoint = `/api/v1/letta/sources/`
+      // Don't use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/sources`
       
       const { data, error } = await apiClient.post(endpoint, payload)
       
@@ -427,7 +429,8 @@ export const filesApi = {
         formData.append('metadata', JSON.stringify(metadata))
       }
 
-      const endpoint = `/api/v1/letta/sources/${sourceId}/upload/`
+      // Don't use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/sources/${sourceId}/upload`
       
       // Use special form data upload method
       const { data, error } = await apiClient.postFormData(endpoint, formData)
@@ -509,7 +512,8 @@ export const filesApi = {
    */
   async attachSourceToAgent(agentId, sourceId) {
     try {
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}/`
+      // Don't use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}`
       
       const { data, error } = await apiClient.post(endpoint, {})
       
@@ -563,6 +567,7 @@ export const filesApi = {
    */
   async getAgentSources(agentId) {
     try {
+      // Use trailing slash for GET without query params
       const endpoint = `/api/v1/letta/agents/${agentId}/sources/`
       
       const { data, error } = await apiClient.get(endpoint)
