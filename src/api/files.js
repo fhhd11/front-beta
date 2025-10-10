@@ -251,7 +251,8 @@ export const filesApi = {
       const {
         name,
         description = '',
-        metadata = {}
+        metadata = {},
+        embedding_config = null
       } = sourceData
 
       if (!name) {
@@ -261,7 +262,13 @@ export const filesApi = {
       const payload = {
         name,
         description,
-        metadata
+        metadata,
+        // Use default embedding config if not provided
+        embedding_config: embedding_config || {
+          embedding_model: 'text-embedding-ada-002',
+          embedding_dim: 1536,
+          embedding_chunk_size: 300
+        }
       }
 
       const endpoint = `/api/v1/letta/sources/`
