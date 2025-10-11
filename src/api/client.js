@@ -68,8 +68,12 @@ class ApiClient {
         throw new ApiError(errorMessage, response.status, errorData)
       }
 
-      // Parse JSON response
-      const data = await response.json()
+      // Parse JSON response (handle 204 No Content with empty body)
+      let data = null
+      if (response.status !== 204) {
+        const text = await response.text()
+        data = text ? JSON.parse(text) : null
+      }
       return { data, error: null }
       
     } catch (error) {
@@ -215,8 +219,12 @@ class ApiClient {
         throw new ApiError(errorMessage, response.status, errorData)
       }
 
-      // Parse JSON response
-      const data = await response.json()
+      // Parse JSON response (handle 204 No Content with empty body)
+      let data = null
+      if (response.status !== 204) {
+        const text = await response.text()
+        data = text ? JSON.parse(text) : null
+      }
       return { data, error: null }
       
     } catch (error) {
