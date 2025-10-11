@@ -112,12 +112,35 @@ export function useFiles() {
 
       // Get agent's embedding_config to use for the source
       let agentEmbeddingConfig = null
-      if (user.value.letta_agent_id) {
-        const { data: agentData, error: agentError } = await filesApi.getAgent(user.value.letta_agent_id)
+      
+      // Get fresh user profile to ensure letta_agent_id is available
+      const { data: profile, error: profileError } = await userApi.getMe()
+      
+      console.log('Getting agent embedding_config...', {
+        hasProfile: !!profile,
+        profileError,
+        userId: profile?.id,
+        agentId: profile?.letta_agent_id
+      })
+      
+      if (profile?.letta_agent_id && !profileError) {
+        const { data: agentData, error: agentError } = await filesApi.getAgent(profile.letta_agent_id)
+        
+        console.log('Agent data received:', {
+          hasData: !!agentData,
+          hasError: !!agentError,
+          error: agentError,
+          embeddingConfig: agentData?.embedding_config
+        })
+        
         if (agentData && !agentError) {
           agentEmbeddingConfig = agentData.embedding_config
           console.log('Using agent embedding_config:', agentEmbeddingConfig)
+        } else {
+          console.warn('Could not get agent embedding_config:', { agentError })
         }
+      } else {
+        console.warn('No letta_agent_id available, cannot get embedding_config', { profileError })
       }
 
       // Create new source if it doesn't exist
