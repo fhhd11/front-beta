@@ -12,13 +12,10 @@ export const chatApi = {
         order = 'desc',
         order_by = 'created_at',
         group_id = null,
-        use_assistant_message = true,
-        assistant_message_tool_name = 'send_message',
-        assistant_message_tool_kwarg = 'message',
         include_err = false
       } = options
 
-      // Build query parameters
+      // Build query parameters (removed client-side tool-loop parameters)
       const params = new URLSearchParams()
       if (before) params.append('before', before)
       if (after) params.append('after', after)
@@ -26,9 +23,6 @@ export const chatApi = {
       if (order) params.append('order', order)
       if (order_by) params.append('order_by', order_by)
       if (group_id) params.append('group_id', group_id)
-      if (use_assistant_message !== undefined) params.append('use_assistant_message', use_assistant_message.toString())
-      if (assistant_message_tool_name) params.append('assistant_message_tool_name', assistant_message_tool_name)
-      if (assistant_message_tool_kwarg) params.append('assistant_message_tool_kwarg', assistant_message_tool_kwarg)
       if (include_err !== undefined) params.append('include_err', include_err.toString())
 
       const queryString = params.toString()
@@ -94,21 +88,15 @@ export const chatApi = {
       const {
         group_id = null,
         max_steps = 50,
-        use_assistant_message = true,
-        assistant_message_tool_name = 'send_message',
-        assistant_message_tool_kwarg = 'message',
         include_return_message_types = null,
         enable_thinking = true,
         background = false
       } = options
 
-      // Build query parameters
+      // Build query parameters (removed client-side tool-loop parameters)
       const params = new URLSearchParams()
       if (group_id) params.append('group_id', group_id)
       if (max_steps) params.append('max_steps', max_steps.toString())
-      if (use_assistant_message !== undefined) params.append('use_assistant_message', use_assistant_message.toString())
-      if (assistant_message_tool_name) params.append('assistant_message_tool_name', assistant_message_tool_name)
-      if (assistant_message_tool_kwarg) params.append('assistant_message_tool_kwarg', assistant_message_tool_kwarg)
       if (include_return_message_types) params.append('include_return_message_types', include_return_message_types.join(','))
       if (enable_thinking !== undefined) params.append('enable_thinking', enable_thinking.toString())
       if (background !== undefined) params.append('background', background.toString())
@@ -156,9 +144,6 @@ export const chatApi = {
       const {
         group_id = null,
         max_steps = 50,
-        use_assistant_message = true,
-        assistant_message_tool_name = 'send_message',
-        assistant_message_tool_kwarg = 'message',
         include_return_message_types = null,
         enable_thinking = true,
         stream_tokens = true,
@@ -166,13 +151,10 @@ export const chatApi = {
         background = false
       } = options
 
-      // Build query parameters for SSE endpoint
+      // Build query parameters for SSE endpoint (removed client-side tool-loop parameters)
       const params = new URLSearchParams()
       if (group_id) params.append('group_id', group_id)
       if (max_steps) params.append('max_steps', max_steps.toString())
-      if (use_assistant_message !== undefined) params.append('use_assistant_message', use_assistant_message.toString())
-      if (assistant_message_tool_name) params.append('assistant_message_tool_name', assistant_message_tool_name)
-      if (assistant_message_tool_kwarg) params.append('assistant_message_tool_kwarg', assistant_message_tool_kwarg)
       if (include_return_message_types) params.append('include_return_message_types', include_return_message_types.join(','))
       if (enable_thinking !== undefined) params.append('enable_thinking', enable_thinking.toString())
       if (stream_tokens !== undefined) params.append('stream_tokens', stream_tokens.toString())
