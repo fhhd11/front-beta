@@ -13,6 +13,12 @@ export const llmApi = {
       const litellmBaseUrl = import.meta.env.VITE_LITELLM_BASE_URL
       const model = import.meta.env.VITE_LITELLM_MODEL || 'gemini-2.0-flash-exp'
       
+      console.log('Environment check:', {
+        litellmBaseUrl,
+        model,
+        allEnvVars: import.meta.env
+      })
+      
       if (!litellmBaseUrl) {
         throw new Error('VITE_LITELLM_BASE_URL is not configured')
       }
