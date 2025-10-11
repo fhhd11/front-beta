@@ -67,6 +67,21 @@ export function useFiles() {
       })
 
       if (createError) {
+        // If source already exists (409 Conflict), try to get it again
+        if (createError.includes('409') || createError.includes('Conflict') || createError.includes('already exists')) {
+          console.log('Source already exists (409), fetching again...')
+          const { data: retrySource, error: retryError } = await filesApi.getSourceByName(sourceName)
+          
+          if (retrySource && !retryError) {
+            const sourceObj = typeof retrySource === 'string' 
+              ? { id: retrySource, name: sourceName }
+              : retrySource
+            
+            userSource.value = sourceObj
+            return sourceObj
+          }
+        }
+        
         throw new Error(createError)
       }
 

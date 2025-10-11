@@ -57,8 +57,8 @@ export const filesApi = {
    */
   async getFolder(folderId) {
     try {
-      // Use trailing slash for GET without query params
-      const endpoint = `/api/v1/letta/folders/${folderId}/`
+      // Don't use trailing slash for GET - causes 307 redirect
+      const endpoint = `/api/v1/letta/folders/${folderId}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -85,8 +85,8 @@ export const filesApi = {
    */
   async getFolderByName(folderName) {
     try {
-      // Use trailing slash for GET without query params
-      const endpoint = `/api/v1/letta/folders/name/${encodeURIComponent(folderName)}/`
+      // Don't use trailing slash for GET - causes 307 redirect
+      const endpoint = `/api/v1/letta/folders/name/${encodeURIComponent(folderName)}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -312,8 +312,8 @@ export const filesApi = {
    */
   async getSourceByName(sourceName) {
     try {
-      // Use trailing slash for GET without query params
-      const endpoint = `/api/v1/letta/sources/name/${encodeURIComponent(sourceName)}/`
+      // Don't use trailing slash for GET - causes 307 redirect
+      const endpoint = `/api/v1/letta/sources/name/${encodeURIComponent(sourceName)}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -498,8 +498,8 @@ export const filesApi = {
    */
   async getFileMetadata(sourceId, fileId) {
     try {
-      // Use trailing slash for GET without query params
-      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}/`
+      // Don't use trailing slash for GET - causes 307 redirect
+      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -582,8 +582,8 @@ export const filesApi = {
    */
   async getAgentSources(agentId) {
     try {
-      // Use trailing slash for GET without query params
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources/`
+      // Don't use trailing slash for GET - causes 307 redirect
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources`
       
       const { data, error } = await apiClient.get(endpoint)
       
