@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { filesApi, fileUtils } from '../api/files.js'
 import { useAuth } from './useAuth.js'
+import { userApi } from '../api/user.js'
 
 /**
  * Composable for managing user files and folders
@@ -28,19 +29,27 @@ export function useFiles() {
    * Attach source to agent if not already attached
    */
   const attachSourceToAgentIfNeeded = async (sourceId) => {
-    // Get fresh user data to ensure letta_agent_id is available
-    const agentId = user.value?.letta_agent_id
-    
-    if (!agentId) {
-      console.warn('No agent ID available, skipping source attachment', { 
-        hasUser: !!user.value, 
-        userId: user.value?.id,
-        agentId: user.value?.letta_agent_id 
-      })
-      return
-    }
-
     try {
+      // Get fresh user profile to ensure letta_agent_id is available
+      const { data: profile, error: profileError } = await userApi.getProfile()
+      
+      if (profileError || !profile) {
+        console.warn('Could not get user profile for source attachment:', profileError)
+        return
+      }
+
+      const agentId = profile.letta_agent_id
+      
+      if (!agentId) {
+        console.warn('No agent ID in profile, skipping source attachment', { 
+          hasProfile: !!profile, 
+          userId: profile?.id,
+          agentId: profile?.letta_agent_id 
+        })
+        return
+      }
+
+      console.log('Attaching source to agent:', { agentId, sourceId })
 
       // Check if source is already attached
       const { data: attachedSources, error: getError } = await filesApi.getAgentSources(agentId)
@@ -55,7 +64,6 @@ export function useFiles() {
       }
 
       // Attach source to agent
-      console.log('Attaching source to agent:', { agentId, sourceId })
       const { error: attachError } = await filesApi.attachSourceToAgent(agentId, sourceId)
       
       if (attachError) {
