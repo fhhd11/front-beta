@@ -16,11 +16,6 @@ export const imageGenerationApi = {
       const litellmBaseUrl = import.meta.env.VITE_LITELLM_BASE_URL
       const model = 'gemini/gemini-2.5-flash-image'
       
-      console.log('Image generation environment check:', {
-        litellmBaseUrl,
-        model,
-        allEnvVars: import.meta.env
-      })
       
       if (!litellmBaseUrl) {
         throw new Error('VITE_LITELLM_BASE_URL is not configured')
