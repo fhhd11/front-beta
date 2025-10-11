@@ -1,9 +1,9 @@
 <template>
   <div 
-    class="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 w-full"
+    class="flex flex-col gap-2 sm:gap-3 md:gap-3 lg:gap-4 xl:gap-6 w-full"
     :class="{ 
       'items-start': !isUser,
-      'items-end max-w-full sm:max-w-[85%] md:max-w-[80%] lg:max-w-[75%] xl:max-w-[409px] ml-auto': isUser 
+      'items-end ml-auto': isUser 
     }"
   >
     <!-- User message wrapper with flip effect -->
@@ -12,9 +12,9 @@
       class="flex items-center justify-center w-full"
     >
       <div class="flex-none rotate-180 scale-y-[-1] w-full">
-        <div class="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-[10.046px] items-start w-full">
+        <div class="flex flex-col gap-2 sm:gap-3 md:gap-3 lg:gap-4 xl:gap-[10.046px] items-start w-full">
           <!-- User Avatar -->
-          <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-[25.115px] xl:h-[25.115px] flex-shrink-0">
+          <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-[25.115px] xl:h-[25.115px] flex-shrink-0">
             <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
               <circle cx="12.5573" cy="12.5573" r="12.5573" transform="matrix(-1 0 0 1 25.3672 0)" fill="url(#paint0_linear_user)"/>
               <circle cx="12.5573" cy="12.5573" r="12.1136" transform="matrix(-1 0 0 1 25.3672 0)" stroke="url(#paint1_linear_user)" stroke-opacity="0.08" stroke-width="0.887339"/>
@@ -32,13 +32,11 @@
           </div>
 
           <!-- User Message Box -->
-          <div class="message-blur rounded-[6px] sm:rounded-[7px] md:rounded-[7.2px] lg:rounded-[7.4px] xl:rounded-[7.534px] p-2 sm:p-3 md:p-4 lg:p-5 xl:p-[10.046px] w-full flex flex-col gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-[5.023px] items-end justify-center relative overflow-hidden">
-            <div class="flex items-center justify-center w-full">
-              <div class="flex-none rotate-180 scale-y-[-1] w-full">
-                <p class="font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-base lg:text-lg xl:text-[15px] text-white tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.3px] lg:tracking-[1.4px] xl:tracking-[1.5px] leading-[1.6] sm:leading-[1.7] md:leading-[1.8] lg:leading-[2] xl:leading-[25.115px] m-0">
-                  {{ message.content }}
-                </p>
-              </div>
+          <div class="message-blur rounded-[6px] sm:rounded-[7px] md:rounded-[7.2px] lg:rounded-[7.4px] xl:rounded-[7.534px] p-2 sm:p-3 md:p-3 lg:p-4 xl:p-[10.046px] flex flex-col gap-1 sm:gap-2 md:gap-2 lg:gap-3 xl:gap-[5.023px] items-end relative w-full">
+            <div class="rotate-180 scale-y-[-1] w-full">
+              <p class="font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-sm lg:text-base xl:text-[15px] text-white tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.2px] lg:tracking-[1.3px] xl:tracking-[1.5px] leading-[1.6] sm:leading-[1.7] md:leading-[1.7] lg:leading-[1.8] xl:leading-[25.115px] m-0" style="white-space: nowrap; max-width: none;">
+                {{ message.content }}
+              </p>
             </div>
             
             <!-- Copy button for user -->
@@ -80,9 +78,9 @@
     <!-- Agent messages (no flip) -->
     <template v-else>
       <!-- Agent Message Box (avatar is now shown in ChatPage.vue) -->
-      <div class="message-blur rounded-[6px] sm:rounded-[7px] md:rounded-[8px] lg:rounded-[8.4px] xl:rounded-[8.702px] p-2 sm:p-3 md:p-4 lg:p-5 xl:p-[11.603px] flex flex-col gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-[5.801px] items-start relative overflow-hidden streaming-content">
+      <div class="message-blur rounded-[6px] sm:rounded-[7px] md:rounded-[8px] lg:rounded-[8.4px] xl:rounded-[8.702px] p-2 sm:p-3 md:p-3 lg:p-4 xl:p-[11.603px] flex flex-col gap-1 sm:gap-2 md:gap-2 lg:gap-3 xl:gap-[5.801px] items-start relative overflow-hidden streaming-content">
         <div 
-          class="font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-base lg:text-lg xl:text-[15px] text-white tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.3px] lg:tracking-[1.4px] xl:tracking-[1.5px] leading-[1.6] sm:leading-[1.8] md:leading-[2] lg:leading-[2.2] xl:leading-[29.007px]"
+          class="font-['Roboto_Mono'] font-light text-xs sm:text-sm md:text-sm lg:text-base xl:text-[15px] text-white tracking-[1px] sm:tracking-[1.2px] md:tracking-[1.2px] lg:tracking-[1.3px] xl:tracking-[1.5px] leading-[1.6] sm:leading-[1.8] md:leading-[1.8] lg:leading-[2] xl:leading-[29.007px]"
           v-html="processedContent"
         ></div>
         

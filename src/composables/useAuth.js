@@ -37,12 +37,6 @@ export function useAuth() {
 
       userProfile.value = profileData
       lettaAgentId.value = profileData.letta_agent_id
-      
-      console.log('User profile loaded:', {
-        name: profileData.name,
-        email: profileData.email,
-        letta_agent_id: profileData.letta_agent_id
-      })
     } catch (err) {
       console.error('Error loading user profile:', err)
       // Don't throw error for network/CORS issues
@@ -59,34 +53,20 @@ export function useAuth() {
     
     try {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        console.log(`Waiting for user data... Attempt ${attempt}/${maxAttempts}`)
-        
         try {
           // Try to load user profile
           await loadUserProfile()
           
           // Check if we have both user profile and agent ID
           if (userProfile.value && lettaAgentId.value) {
-            console.log('User data is ready!', {
-              hasProfile: !!userProfile.value,
-              hasAgentId: !!lettaAgentId.value,
-              agentId: lettaAgentId.value
-            })
             postRegistrationLoading.value = false
             return { success: true, data: userProfile.value }
-          }
-          
-          // If we have profile but no agent ID yet, continue waiting
-          if (userProfile.value && !lettaAgentId.value) {
-            console.log('User profile loaded but agent not ready yet...')
           }
           
         } catch (profileError) {
           console.warn(`Profile load attempt ${attempt} failed:`, profileError)
           // Continue to next attempt for network errors
-          if (profileError.message && profileError.message.includes('fetch')) {
-            console.log('Network error, retrying...')
-          } else {
+          if (!profileError.message || !profileError.message.includes('fetch')) {
             // For other errors, wait a bit longer before retry
             await new Promise(resolve => setTimeout(resolve, intervalMs * 0.5))
           }
@@ -178,7 +158,6 @@ export function useAuth() {
 
       // If registration was successful, wait for user data to be ready
       if (data.user) {
-        console.log('Registration successful, waiting for user data...')
         const waitResult = await waitForUserDataReady()
         
         if (!waitResult.success) {
@@ -312,8 +291,6 @@ export function useAuth() {
   // Setup auth state listener
   const setupAuthListener = () => {
     const { data: { subscription } } = authHelpers.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session)
-      
       if (event === 'SIGNED_IN') {
         user.value = session?.user || null
         session.value = session

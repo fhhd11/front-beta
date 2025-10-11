@@ -59,16 +59,16 @@
     </div>
 
     <!-- Main Content Container -->
-    <div class="main-content-container relative w-full max-w-[1920px] h-screen flex flex-col items-center justify-end gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-[10px] pt-20 sm:pt-24 md:pt-0">
+    <div class="main-content-container relative w-full max-w-[1920px] h-screen flex flex-col items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 pb-2 sm:pb-3 md:pb-4 pt-12 sm:pt-14 md:pt-16">
 
       <!-- Chat Container -->
-      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-220px)] sm:h-[calc(100vh-240px)] md:h-[78vh] lg:h-[85vh] xl:h-[82vh] 2xl:h-[80vh] will-change-auto" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
+      <div class="chat-container-glow rounded-[12px] sm:rounded-[15px] md:rounded-[17px] lg:rounded-[19px] backdrop-blur-[77.2px] shadow-[0px_0px_36.3px_-13px_rgba(0,0,0,0.67)] relative overflow-hidden w-full h-[calc(100vh-60px)] sm:h-[calc(100vh-80px)] md:h-[calc(100vh-100px)] lg:h-[calc(100vh-110px)] xl:h-[calc(100vh-120px)] will-change-auto" style="background: linear-gradient(128deg, rgba(0, 0, 0, 0.67) 17.72%, rgba(0, 0, 0, 0.67) 96.51%); max-width: 1447px;">
         <!-- Top gradient fade overlay -->
         <div class="absolute top-0 left-0 right-0 h-24 pointer-events-none z-10 fade-gradient-top"></div>
         
-        <!-- Messages Container with scroll -->
-        <div ref="messagesContainer" class="h-full overflow-y-auto scrollbar-hidden p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 2xl:p-10">
-          <div class="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-7 2xl:gap-8">
+        <!-- Agent Chat Messages Container -->
+        <div v-if="chatMode === 'agent'" ref="messagesContainer" class="h-full overflow-y-auto scrollbar-hidden p-3 sm:p-4 md:p-4 lg:p-5 xl:p-8 2xl:p-10">
+          <div class="flex flex-col gap-3 sm:gap-4 md:gap-4 lg:gap-5 xl:gap-7 2xl:gap-8">
             <!-- Messages -->
             <div v-for="message in messages" :key="message.id || message.reasoning?.id" :class="{ 'flex justify-end': message.role === 'user' }">
               <!-- User message -->
@@ -190,7 +190,7 @@
             <div v-if="chatError" class="bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-red-300">
               <div class="flex items-center justify-between">
                 <p class="text-sm">{{ chatError }}</p>
-                <button @click="clearError" class="text-red-300 hover:text-red-200 ml-2">
+                <button @click="handleClearError" class="text-red-300 hover:text-red-200 ml-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
@@ -199,24 +199,39 @@
             </div>
           </div>
         </div>
+
+        <!-- LLM Chat Container -->
+        <LLMChatContainer
+          v-else
+          ref="messagesContainer"
+          :messages="llmMessages"
+          :is-sending="isLLMSending"
+          :is-streaming="isLLMStreaming"
+          :error="llmError"
+          @clear-error="clearLLMError"
+          @edit-message="handleEditMessage"
+        />
       </div>
 
 
       <!-- Chat Input (Outside chat block) -->
       <div class="chat-input-container w-full max-w-[95%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[749px] flex items-center justify-center mb-4 sm:mb-6 md:mb-0">
         <ChatInput 
-          @send-message="handleSendMessage" 
-          :is-streaming="isStreaming"
-          :context-usage="contextUsage"
-          :memory-stats="memoryStats"
-          :is-near-limit="isNearLimit"
-          :is-at-limit="isAtLimit"
-          :is-summarizing="isSummarizing"
+          @send-message="handleSendMessage"
+          @generate-image="handleGenerateImage"
+          :is-streaming="currentIsStreaming"
+          :chat-mode="chatMode"
+          :context-usage="chatMode === 'agent' ? contextUsage : null"
+          :memory-stats="chatMode === 'agent' ? memoryStats : null"
+          :is-near-limit="chatMode === 'agent' ? isNearLimit : false"
+          :is-at-limit="chatMode === 'agent' ? isAtLimit : false"
+          :is-summarizing="chatMode === 'agent' ? isSummarizing : false"
+          :show-file-manager="chatMode === 'agent'"
         />
       </div>
 
       <!-- User Info with Logout (Fixed Top Right) -->
-      <div class="fixed top-2 right-2 sm:top-4 sm:right-4 md:right-6 lg:right-8 xl:right-12 2xl:right-16 z-40 flex items-start gap-2 sm:gap-3">
+      <div class="fixed top-2 right-2 sm:top-4 sm:right-4 md:right-6 lg:right-8 xl:right-12 2xl:right-16 z-40 flex items-start gap-2 sm:gap-2 md:gap-3">
         <!-- User Email -->
         <div class="text-right hidden sm:block">
           <p class="text-white/60 text-xs">{{ userEmail }}</p>
@@ -225,36 +240,121 @@
         <!-- Logout Button -->
         <button 
           @click="handleLogout"
-          class="header-action-button group w-8 h-8 sm:w-10 sm:h-10"
+          class="header-action-button group w-9 h-9 sm:w-10 sm:h-10"
           :disabled="isLoggingOut"
           title="Выйти"
         >
-          <svg v-if="isLoggingOut" class="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+          <svg v-if="isLoggingOut" class="animate-spin w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <svg v-else class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <svg v-else class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
           </svg>
         </button>
       </div>
 
-      <!-- Reset Chat Button (Fixed Top Left) -->
-      <div class="fixed top-2 left-2 sm:top-4 sm:left-4 md:left-6 lg:left-8 xl:left-12 2xl:left-16 z-40">
+      <!-- Reset Chat Button (Fixed Top Left) - только для режима агента -->
+      <div v-if="chatMode === 'agent'" class="fixed top-2 left-2 sm:top-4 sm:left-4 md:left-6 lg:left-8 xl:left-12 2xl:left-16 z-40">
         <button 
           @click="handleResetChat"
-          class="header-action-button group w-8 h-8 sm:w-10 sm:h-10"
-          :disabled="isResetting || !hasMessages"
+          class="header-action-button group w-9 h-9 sm:w-10 sm:h-10"
+          :disabled="isResetting || !currentHasMessages"
           title="Очистить историю диалога"
         >
-          <svg v-if="isResetting" class="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+          <svg v-if="isResetting" class="animate-spin w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <svg v-else class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <svg v-else class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
+      </div>
+
+      <!-- Chat Mode Switcher (Fixed Top Center) -->
+      <div class="fixed top-2 left-1/2 -translate-x-1/2 sm:top-4 z-40 flex items-center gap-1 sm:gap-3">
+        <!-- LLM Chat Info and Selector (только в режиме LLM) -->
+        <div v-if="chatMode === 'llm'" class="flex items-center gap-1.5 sm:gap-2">
+          <!-- New Chat Button -->
+          <button
+            @click="handleQuickCreateChat"
+            :disabled="isCreatingQuickChat"
+            class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg transition-all"
+            style="background: rgba(0, 0, 0, 0.67); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15);"
+            :class="isCreatingQuickChat ? 'opacity-50' : 'hover:bg-white/5'"
+            title="Создать новый чат"
+          >
+            <svg v-if="!isCreatingQuickChat" class="w-4 h-4 sm:w-5 sm:h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <div v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          </button>
+
+          <!-- Chat Selector Wrapper -->
+          <div class="relative chat-selector-wrapper">
+            <!-- Current chat title and selector button -->
+            <button
+              @click="toggleChatSelector"
+              class="flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-4 sm:py-2 rounded-lg transition-all"
+              style="background: rgba(0, 0, 0, 0.67); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15);"
+              :class="isChatSelectorOpen ? 'bg-white/10' : 'hover:bg-white/5'"
+            >
+              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+              </svg>
+              <span class="text-white text-xs sm:text-sm font-medium max-w-[120px] sm:max-w-[200px] truncate">
+                {{ currentChat?.title || 'Выберите чат' }}
+              </span>
+              <svg 
+                class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/70 transition-transform"
+                :class="{ 'rotate-180': isChatSelectorOpen }"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+
+            <!-- Dropdown -->
+            <LLMChatSelector
+              :is-open="isChatSelectorOpen"
+              @close="closeChatSelector"
+              @chat-selected="handleChatSelected"
+            />
+          </div>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="mode-switcher rounded-full p-1 flex items-center gap-1" style="background: rgba(0, 0, 0, 0.67); backdrop-filter: blur(10px);">
+          <!-- LLM кнопка (слева) -->
+          <button 
+            @click="toggleChatMode('llm')"
+            :class="['mode-button', { 'mode-button-active': chatMode === 'llm' }]"
+            title="Обычный чат с LLM"
+          >
+            <svg class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+            <span class="hidden xs:inline text-xs sm:text-sm font-medium ml-1.5">LLM</span>
+          </button>
+          <!-- Divider -->
+          <div class="h-5 w-px bg-white/20"></div>
+          <!-- Агент кнопка (справа) -->
+          <button 
+            @click="toggleChatMode('agent')"
+            :class="['mode-button', { 'mode-button-active': chatMode === 'agent' }]"
+            title="Агент с инструментами"
+          >
+            <svg class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5" viewBox="0 0 29 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.8662 0.28418C19.0924 -0.163482 19.7599 -0.0594699 19.8398 0.435547L20.96 7.41602C21.0015 7.67502 21.2922 7.80964 21.5166 7.67383L28.2129 3.61426C28.633 3.3596 29.1382 3.77935 28.9658 4.23926L24.9316 14.9873C24.8666 15.1605 24.9398 15.3557 25.1025 15.4434L28.0957 17.0479C28.5464 17.2894 28.4111 17.9681 27.9023 18.0186L24.7803 18.3271C24.5153 18.3535 24.3642 18.6436 24.4941 18.876L27.1396 23.5928C27.3459 23.9604 27.0498 24.4071 26.6309 24.3604L19.4297 23.5566C19.3143 23.5439 19.1987 23.5864 19.1191 23.6709L14.0078 29.1123C13.7512 29.385 13.2984 29.3033 13.1533 28.958L10.3262 22.2314C10.2641 22.0843 10.1143 21.9928 9.95508 22.0059L6.38965 22.2988C5.93036 22.3362 5.65419 21.7998 5.95215 21.4482L8.00293 19.0312C8.15668 18.8496 8.10152 18.5715 7.88965 18.4629L0.28125 14.5693C-0.163676 14.3409 -0.0575712 13.6754 0.436523 13.5967L7.71484 12.4414C7.98322 12.3988 8.11564 12.0911 7.96191 11.8672L0.835938 1.5166C0.527945 1.06823 1.03181 0.508808 1.50977 0.768555L13.0205 7.03809C13.2323 7.15322 13.4962 7.03837 13.5557 6.80469L13.7783 5.9248C13.8854 5.50446 14.4317 5.39441 14.6934 5.74023L15.1865 6.39355C15.3515 6.61195 15.6882 6.58127 15.8115 6.33691L18.8662 0.28418ZM13.0039 14.1426C12.5957 14.1428 12.2531 14.4834 12.3867 14.8691C12.4956 15.1834 12.6754 15.4723 12.915 15.7119C13.331 16.1277 13.8952 16.3613 14.4834 16.3613C15.0716 16.3613 15.6358 16.1278 16.0518 15.7119C16.2913 15.4724 16.4703 15.1833 16.5791 14.8691C16.7127 14.4832 16.3703 14.1426 15.9619 14.1426H13.0039ZM19.4424 14.1426C19.0342 14.1428 18.6916 14.4834 18.8252 14.8691C18.934 15.1833 19.113 15.4723 19.3525 15.7119C19.7685 16.1279 20.3336 16.3613 20.9219 16.3613C21.51 16.3613 22.0743 16.1278 22.4902 15.7119C22.7298 15.4723 22.9087 15.1833 23.0176 14.8691C23.1512 14.4832 22.8088 14.1426 22.4004 14.1426H19.4424Z" fill="currentColor"/>
+            </svg>
+            <!-- Beta Badge (inline) -->
+            <span class="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold tracking-wider px-1 py-0.5 rounded-sm border ml-1" style="background: rgba(255, 138, 0, 0.15); border-color: rgba(255, 138, 0, 0.6); color: #ff8a00; backdrop-filter: blur(4px);">BETA</span>
+            <span class="hidden xs:inline text-xs sm:text-sm font-medium ml-1">Агент</span>
+          </button>
+        </div>
       </div>
 
       <!-- Menu Container (Fixed Bottom Right) - Desktop Only -->
@@ -286,13 +386,19 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import { useChat } from '../composables/useChat.js'
+import { useLLMChat } from '../composables/useLLMChat.js'
+import { useLLMChats } from '../composables/useLLMChats.js'
 import { useContextWindow } from '../composables/useContextWindow.js'
 import ChatMessage from '../components/ChatMessage.vue'
 import ChatInput from '../components/ChatInput.vue'
 import ToolCallMessage from '../components/ToolCallMessage.vue'
+import LLMChatContainer from '../components/LLMChatContainer.vue'
+import LLMChatSelector from '../components/LLMChatSelector.vue'
 
 const router = useRouter()
 const { userEmail, signOut, lettaAgentId } = useAuth()
+
+// Agent chat
 const { 
   messages, 
   isLoading, 
@@ -306,6 +412,35 @@ const {
   resetMessages
 } = useChat()
 
+// LLM chat
+const {
+  llmMessages,
+  isLLMSending,
+  isLLMStreaming,
+  llmError,
+  hasLLMMessages,
+  loadChatMessages,
+  sendLLMMessage,
+  clearLLMMessages,
+  clearLLMError,
+  editLastUserMessage,
+  generateImage
+} = useLLMChat()
+
+// LLM chats management
+const {
+  chats: llmChats,
+  currentChatId,
+  currentChat,
+  isLoadingChats,
+  loadChats,
+  createTemporaryChat,
+  saveTemporaryChat,
+  switchChat,
+  updateChatTitle
+} = useLLMChats()
+
+// Context window (only for agent chat)
 const {
   contextUsage,
   memoryStats,
@@ -316,9 +451,72 @@ const {
   startAutoRefresh
 } = useContextWindow()
 
+// Chat mode: 'agent' or 'llm' - сохраняем в localStorage
+const chatMode = ref(localStorage.getItem('chatMode') || 'agent')
+
 const messagesContainer = ref(null)
 const expandedReasoning = ref({})
 const reasoningOverflow = ref({})
+
+// Computed properties for current mode
+const currentMessages = computed(() => chatMode.value === 'agent' ? messages.value : llmMessages.value)
+const currentIsSending = computed(() => chatMode.value === 'agent' ? isSending.value : isLLMSending.value)
+const currentIsStreaming = computed(() => chatMode.value === 'agent' ? isStreaming.value : isLLMStreaming.value)
+const currentError = computed(() => chatMode.value === 'agent' ? chatError.value : llmError.value)
+const currentHasMessages = computed(() => chatMode.value === 'agent' ? hasMessages.value : hasLLMMessages.value)
+
+// Toggle chat mode
+const toggleChatMode = async (mode) => {
+  // Если передан конкретный режим, устанавливаем его, иначе переключаем
+  if (mode) {
+    chatMode.value = mode
+  } else {
+    chatMode.value = chatMode.value === 'agent' ? 'llm' : 'agent'
+  }
+  
+  // Сохраняем в localStorage
+  localStorage.setItem('chatMode', chatMode.value)
+  
+  // При переключении на LLM, загрузить чаты и сообщения текущего чата
+  if (chatMode.value === 'llm') {
+    // Загрузить список чатов если еще не загружены
+    if (llmChats.value.length === 0 && !isLoadingChats.value) {
+      await loadChats()
+    }
+    // Загрузить сообщения текущего чата (только если не временный)
+    if (currentChatId.value) {
+      const currentLLMChat = llmChats.value.find(c => c.id === currentChatId.value)
+      if (currentLLMChat && !currentLLMChat.isTemporary) {
+        await loadChatMessages(currentChatId.value)
+      }
+    }
+  }
+  
+  // Scroll to bottom when switching modes and re-attach scroll listener
+  nextTick(() => {
+    // Re-attach scroll listener for new container
+    if (messagesContainer.value) {
+      let container = messagesContainer.value
+      
+      if (container.$el) {
+        container = container.$el
+      }
+      
+      const scrollableElement = container.classList?.contains('scrollbar-hidden') 
+        ? container 
+        : container.querySelector('.scrollbar-hidden, .llm-chat-container')
+      
+      if (scrollableElement) {
+        // Remove old listener if exists
+        scrollableElement.removeEventListener('scroll', handleScroll)
+        // Add new listener
+        scrollableElement.addEventListener('scroll', handleScroll)
+      }
+    }
+    
+    scrollToBottom(false)
+  })
+}
 
 
 const toggleReasoning = (reasoningId) => {
@@ -400,12 +598,26 @@ const updateReasoningOverflow = () => {
 // Auto-scroll function
 const scrollToBottom = (smooth = true) => {
   if (messagesContainer.value) {
-    const container = messagesContainer.value
-    const scrollOptions = {
-      top: container.scrollHeight,
-      behavior: smooth ? 'smooth' : 'auto'
+    // Get the actual DOM element (handle both direct ref and component ref)
+    let container = messagesContainer.value
+    
+    // If it's a Vue component instance, get the root element
+    if (container.$el) {
+      container = container.$el
     }
-    container.scrollTo(scrollOptions)
+    
+    // Find the scrollable element
+    const scrollableElement = container.classList?.contains('scrollbar-hidden') 
+      ? container 
+      : container.querySelector('.scrollbar-hidden, .llm-chat-container')
+    
+    if (scrollableElement && typeof scrollableElement.scrollTo === 'function') {
+      const scrollOptions = {
+        top: scrollableElement.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      }
+      scrollableElement.scrollTo(scrollOptions)
+    }
   }
 }
 
@@ -413,8 +625,8 @@ const scrollToBottom = (smooth = true) => {
 const shouldAutoScroll = ref(true)
 const isSummarizing = ref(false)
 
-// Watch for new messages and auto-scroll
-watch(() => messages.value.length, () => {
+// Watch for new messages and auto-scroll (for both agent and LLM modes)
+watch(() => currentMessages.value.length, () => {
   if (shouldAutoScroll.value) {
     // Use nextTick to ensure DOM is updated
     nextTick(() => {
@@ -427,15 +639,29 @@ watch(() => messages.value.length, () => {
 // Handle scroll events to detect if user manually scrolled up
 const handleScroll = () => {
   if (messagesContainer.value) {
-    const container = messagesContainer.value
-    const threshold = 100 // pixels from bottom
-    const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - threshold
-    shouldAutoScroll.value = isNearBottom
+    // Get the actual DOM element
+    let container = messagesContainer.value
+    
+    // If it's a Vue component instance, get the root element
+    if (container.$el) {
+      container = container.$el
+    }
+    
+    // Find the scrollable element
+    const scrollableElement = container.classList?.contains('scrollbar-hidden') 
+      ? container 
+      : container.querySelector('.scrollbar-hidden, .llm-chat-container')
+    
+    if (scrollableElement) {
+      const threshold = 100 // pixels from bottom
+      const isNearBottom = scrollableElement.scrollTop + scrollableElement.clientHeight >= scrollableElement.scrollHeight - threshold
+      shouldAutoScroll.value = isNearBottom
+    }
   }
 }
 
-// Debug: Watch messages array for changes (combined with auto-scroll logic)
-watch(() => messages.value, (newMessages) => {
+// Watch messages for streaming and reasoning overflow updates (for both modes)
+watch(() => currentMessages.value, (newMessages) => {
   
   // Auto-scroll logic for streaming messages
   if (shouldAutoScroll.value) {
@@ -448,16 +674,43 @@ watch(() => messages.value, (newMessages) => {
     }
   }
   
-  // Update reasoning overflow state when messages change
-  updateReasoningOverflow()
-  
+  // Update reasoning overflow state when messages change (only for agent mode)
+  if (chatMode.value === 'agent') {
+    updateReasoningOverflow()
+  }
   
 }, { deep: true, flush: 'post' })
 
-onMounted(() => {
+onMounted(async () => {
+  // Если режим LLM, инициализировать чаты
+  if (chatMode.value === 'llm') {
+    await loadChats()
+    // Загрузить сообщения текущего чата (только если не временный)
+    if (currentChatId.value) {
+      const currentLLMChat = llmChats.value.find(c => c.id === currentChatId.value)
+      if (currentLLMChat && !currentLLMChat.isTemporary) {
+        await loadChatMessages(currentChatId.value)
+      }
+    }
+  }
+
   // Add scroll listener to messages container
   if (messagesContainer.value) {
-    messagesContainer.value.addEventListener('scroll', handleScroll)
+    let container = messagesContainer.value
+    
+    // If it's a Vue component instance, get the root element
+    if (container.$el) {
+      container = container.$el
+    }
+    
+    // Find the scrollable element
+    const scrollableElement = container.classList?.contains('scrollbar-hidden') 
+      ? container 
+      : container.querySelector('.scrollbar-hidden, .llm-chat-container')
+    
+    if (scrollableElement) {
+      scrollableElement.addEventListener('scroll', handleScroll)
+    }
   }
   
   // Add click outside listener for menu
@@ -499,7 +752,21 @@ onMounted(() => {
 onUnmounted(() => {
   // Remove scroll listener from messages container
   if (messagesContainer.value) {
-    messagesContainer.value.removeEventListener('scroll', handleScroll)
+    let container = messagesContainer.value
+    
+    // If it's a Vue component instance, get the root element
+    if (container.$el) {
+      container = container.$el
+    }
+    
+    // Find the scrollable element
+    const scrollableElement = container.classList?.contains('scrollbar-hidden') 
+      ? container 
+      : container.querySelector('.scrollbar-hidden, .llm-chat-container')
+    
+    if (scrollableElement) {
+      scrollableElement.removeEventListener('scroll', handleScroll)
+    }
   }
   
   // Remove click outside listener for menu
@@ -522,22 +789,36 @@ const handleSendMessage = async (messageText) => {
   if (!messageText || !messageText.trim()) return
 
   try {
-    // Check if context summarization is needed before sending
-    isSummarizing.value = true
-    try {
-      const wasSummarized = await checkAndSummarize()
-      if (wasSummarized) {
-        // Reload messages after summarization to reflect the changes
-        await loadMessages()
+    if (chatMode.value === 'agent') {
+      // Agent mode: check summarization and send to agent
+      isSummarizing.value = true
+      try {
+        const wasSummarized = await checkAndSummarize()
+        if (wasSummarized) {
+          await loadMessages()
+        }
+      } catch (summarizationError) {
+        console.warn('Summarization failed, but continuing with message send:', summarizationError)
+      } finally {
+        isSummarizing.value = false
       }
-    } catch (summarizationError) {
-      console.warn('Summarization failed, but continuing with message send:', summarizationError)
-      // Continue with sending message even if summarization failed
-    } finally {
-      isSummarizing.value = false
-    }
 
-    await sendMessage(messageText)
+      await sendMessage(messageText)
+      
+      // Update context window data after sending message
+      setTimeout(() => {
+        if (lettaAgentId.value) {
+          fetchContextData()
+        }
+      }, 1000)
+    } else {
+      // LLM mode: send to LLM with current chat ID
+      if (!currentChatId.value) {
+        console.error('No current chat ID')
+        return
+      }
+      await sendLLMMessage(messageText, currentChatId.value, currentChat.value, saveTemporaryChat, updateChatTitle)
+    }
     
     // Ensure auto-scroll is enabled after sending message
     shouldAutoScroll.value = true
@@ -546,24 +827,49 @@ const handleSendMessage = async (messageText) => {
     nextTick(() => {
       scrollToBottom(true)
     })
-    
-    // Update context window data after sending message
-    setTimeout(() => {
-      // Only fetch if agent ID is available
-      if (lettaAgentId.value) {
-        fetchContextData()
-      }
-    }, 1000) // Small delay to ensure message is processed
   } catch (error) {
     console.error('Failed to send message:', error)
     isSummarizing.value = false
-    // Error is already handled in useChat composable
+    // Error is already handled in composables
+  }
+}
+
+const handleGenerateImage = async (prompt) => {
+  if (!prompt || !prompt.trim()) return
+
+  try {
+    if (chatMode.value === 'llm') {
+      // Get current chat info
+      const currentChatInfo = currentChat.value
+      
+      // Generate image using LLM chat
+      await generateImage(
+        prompt, 
+        currentChatInfo.id, 
+        currentChatInfo, 
+        saveTemporaryChat,
+        updateChatTitle
+      )
+      
+      // Ensure auto-scroll is enabled after generating image
+      shouldAutoScroll.value = true
+      
+      // Scroll to bottom after generation
+      nextTick(() => {
+        scrollToBottom(true)
+      })
+    }
+  } catch (error) {
+    console.error('Failed to generate image:', error)
+    // Error is already handled in composables
   }
 }
 
 const isLoggingOut = ref(false)
 const isResetting = ref(false)
 const isMenuOpen = ref(false)
+const isChatSelectorOpen = ref(false)
+const isCreatingQuickChat = ref(false)
 
 const handleLogout = async () => {
   try {
@@ -584,7 +890,11 @@ const handleResetChat = async () => {
 
   try {
     isResetting.value = true
-    await resetMessages({ add_default_initial_messages: false })
+    if (chatMode.value === 'agent') {
+      await resetMessages({ add_default_initial_messages: false })
+    } else {
+      clearLLMMessages()
+    }
   } catch (error) {
     console.error('Reset chat error:', error)
   } finally {
@@ -592,11 +902,83 @@ const handleResetChat = async () => {
   }
 }
 
+const handleClearError = () => {
+  if (chatMode.value === 'agent') {
+    clearError()
+  } else {
+    clearLLMError()
+  }
+}
+
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
 }
 
-// Close menu when clicking outside
+// Chat selector handlers
+const toggleChatSelector = () => {
+  isChatSelectorOpen.value = !isChatSelectorOpen.value
+}
+
+const closeChatSelector = () => {
+  isChatSelectorOpen.value = false
+}
+
+const handleChatSelected = async (chatId) => {
+  // Сначала очистить сообщения для мгновенного обновления UI
+  clearLLMMessages()
+  
+  // Проверяем, является ли чат временным
+  const selectedChat = llmChats.value.find(c => c.id === chatId)
+  
+  if (selectedChat && !selectedChat.isTemporary) {
+    // Для реальных чатов загружаем сообщения из БД
+    await loadChatMessages(chatId)
+  }
+  // Для временных чатов сообщений нет, ничего не загружаем
+  
+  // Scroll to bottom
+  nextTick(() => {
+    scrollToBottom(false)
+  })
+}
+
+// Quick create new chat
+const handleQuickCreateChat = async () => {
+  isCreatingQuickChat.value = true
+  try {
+    // Проверяем, есть ли уже пустой временный чат
+    const existingTempChat = llmChats.value.find(c => c.isTemporary)
+    
+    if (existingTempChat) {
+      // Если уже есть временный чат, просто переключаемся на него
+      clearLLMMessages()
+      switchChat(existingTempChat.id)
+    } else {
+      // Создаем новый временный чат только если нет других
+      clearLLMMessages()
+      createTemporaryChat('Новый чат')
+    }
+  } finally {
+    isCreatingQuickChat.value = false
+  }
+}
+
+// Handle message editing (for branching)
+const handleEditMessage = async (newContent) => {
+  if (!currentChatId.value) return
+  
+  try {
+    await editLastUserMessage(newContent, currentChatId.value, currentChat.value, saveTemporaryChat, updateChatTitle)
+    // Scroll to bottom after editing
+    nextTick(() => {
+      scrollToBottom(true)
+    })
+  } catch (error) {
+    console.error('Error editing message:', error)
+  }
+}
+
+// Close menu and chat selector when clicking outside
 const handleClickOutside = (event) => {
   if (isMenuOpen.value) {
     const menuContainer = event.target.closest('.menu-container')
@@ -604,12 +986,24 @@ const handleClickOutside = (event) => {
       isMenuOpen.value = false
     }
   }
+  
+  // Close chat selector if clicking outside
+  if (isChatSelectorOpen.value) {
+    const chatSelector = event.target.closest('.chat-selector-wrapper')
+    if (!chatSelector) {
+      isChatSelectorOpen.value = false
+    }
+  }
 }
 
-// Close menu on Escape key
+// Close menu and chat selector on Escape key
 const handleEscapeKey = (event) => {
-  if (event.key === 'Escape' && isMenuOpen.value) {
-    isMenuOpen.value = false
+  if (event.key === 'Escape') {
+    if (isChatSelectorOpen.value) {
+      isChatSelectorOpen.value = false
+    } else if (isMenuOpen.value) {
+      isMenuOpen.value = false
+    }
   }
 }
 
@@ -944,5 +1338,51 @@ const handleEscapeKey = (event) => {
   .chat-input-container {
     margin-bottom: 20px;
   }
+}
+
+/* Mode Switcher Styles */
+.mode-switcher {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.mode-button {
+  @apply flex items-center justify-center px-2.5 py-2 sm:px-3 sm:py-2 rounded-full;
+  @apply text-white/50 hover:text-white/80;
+  @apply transition-all duration-300;
+  @apply cursor-pointer;
+  background: transparent;
+  border: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.mode-button-active {
+  @apply text-white;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+.mode-button:hover:not(.mode-button-active) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mode-button:active {
+  transform: scale(0.95);
+}
+
+/* Smooth mode transition */
+.mode-transition-enter-active,
+.mode-transition-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mode-transition-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.mode-transition-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

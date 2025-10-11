@@ -396,21 +396,6 @@ export const messageUtils = {
     //   return null
     // }
 
-    // Debug logging for tool messages only
-    if (lettaMessage.message_type === 'tool_call_message') {
-      console.log('Converting tool call message:', {
-        id: lettaMessage.id,
-        tool_call: lettaMessage.tool_call
-      })
-    }
-    
-    if (lettaMessage.message_type === 'tool_return_message') {
-      console.log('Converting tool return message:', {
-        id: lettaMessage.id,
-        tool_return: lettaMessage.tool_return,
-        tool_call_id: lettaMessage.tool_call_id
-      })
-    }
 
     const convertedMessage = {
       id: `${lettaMessage.id}-${lettaMessage.message_type}`, // Make ID unique by combining with message type
@@ -489,7 +474,6 @@ export const messageUtils = {
           message.messageType !== 'reasoning_message' && 
           message.messageType !== 'tool_call_message' && 
           message.messageType !== 'tool_return_message') {
-        console.log('Skipping empty message:', message.messageType)
         continue
       }
 
@@ -537,16 +521,12 @@ export const messageUtils = {
           })
           currentToolCalls.push(message)
         } else if (message.messageType === 'tool_return_message') {
-          console.log('Processing tool return message:', message)
           // Find matching tool call block and add return value
           if (currentAgentGroup.blocks.length > 0) {
             // Find the last tool_call block
             const lastToolCallBlock = [...currentAgentGroup.blocks].reverse().find(block => block.type === 'tool_call')
             if (lastToolCallBlock) {
-              console.log('Found matching tool call block, adding return value')
               lastToolCallBlock.data.toolReturn = message
-            } else {
-              console.log('No matching tool call block found')
             }
           }
         } else if (message.messageType === 'assistant_message') {

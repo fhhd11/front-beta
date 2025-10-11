@@ -2,14 +2,28 @@
   <div class="flex items-center justify-end gap-2 sm:gap-3 md:gap-[10.314px] w-full h-12 sm:h-12 md:h-14 lg:h-16 xl:h-[72px]" style="max-width: 749px; max-height: 72px;">
     <!-- Единый контейнер композера с input и кнопкой -->
     <div class="flex items-center gap-2 sm:gap-3 md:gap-[10.314px] bg-gradient-to-r from-[rgba(0,0,0,0.65)] from-[75.481%] to-[rgba(25,25,25,0.475)] rounded-[10px] sm:rounded-[12px] md:rounded-[14px] lg:rounded-[15.471px] backdrop-blur-[77.2px] px-3 sm:px-4 md:px-6 lg:px-8 xl:px-[26.816px] py-3 sm:py-3 md:py-4 lg:py-5 xl:py-[15.471px] h-full w-full will-change-auto">
-      <!-- File Manager Button -->
-      <FileManager :isDisabled="isStreaming" />
+      <!-- File Manager Button (только для режима агента) -->
+      <FileManager v-if="showFileManager" :isDisabled="isStreaming" />
+      
+      <!-- Image Generation Button (только для режима LLM) -->
+      <button 
+        v-if="showImageButton"
+        @click="toggleImageMode"
+        :disabled="isStreaming"
+        class="flex-shrink-0 w-6 h-6 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-[25.336px] xl:h-[26.115px] hover:opacity-80 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+        :class="{ 'text-blue-400': isImageMode, 'text-white': !isImageMode }"
+        :title="isImageMode ? 'Переключить в текстовый режим' : 'Переключить в режим генерации изображений'"
+      >
+        <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+      </button>
       
       <input 
         v-model="messageInput"
         ref="inputRef"
         type="text" 
-        :placeholder="isSummarizing ? 'Суммаризация контекста...' : (isStreaming ? 'Агент печатает...' : 'text,photo,video,code')"
+        :placeholder="getPlaceholder()"
         :disabled="isStreaming"
         class="flex-1 bg-transparent text-white font-['Roboto_Mono'] text-xs sm:text-sm md:text-base lg:text-lg xl:text-[16.406px] font-normal tracking-[1.5px] sm:tracking-[2px] md:tracking-[2.5px] lg:tracking-[3px] xl:tracking-[3.4452px] lowercase outline-none border-none placeholder:text-[#4E4E4E] leading-[2] disabled:opacity-50 disabled:cursor-not-allowed"
         @keydown.enter="handleSend"
@@ -111,6 +125,7 @@
         @click="handleSend"
         :disabled="!messageInput.trim() || isStreaming || isSummarizing"
         class="flex-shrink-0 w-6 h-6 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-[25.336px] xl:h-[26.115px] hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed relative"
+        :title="'Отправить сообщение'"
       >
         <!-- Loading spinner for summarization -->
         <div v-if="isSummarizing" class="absolute inset-0 flex items-center justify-center">
@@ -118,7 +133,7 @@
         </div>
         
         <!-- Send icon -->
-        <svg v-else viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+        <svg viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
           <path d="M0.664062 3.33002C0.664063 1.4657 2.78507 0.346099 4.55098 1.27826L24.5834 11.8526C26.4104 12.817 26.4864 15.2379 24.719 16.1709L4.68659 26.7452C2.91918 27.6782 0.664063 26.4075 0.664063 24.4787L0.664062 3.33002Z" fill="white"/>
         </svg>
       </button>
@@ -130,12 +145,16 @@
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import FileManager from './FileManager.vue'
 
-const emit = defineEmits(['send-message'])
+const emit = defineEmits(['send-message', 'generate-image'])
 
 const props = defineProps({
   isStreaming: {
     type: Boolean,
     default: false
+  },
+  chatMode: {
+    type: String,
+    default: 'agent'
   },
   contextUsage: {
     type: Object,
@@ -156,11 +175,16 @@ const props = defineProps({
   isSummarizing: {
     type: Boolean,
     default: false
+  },
+  showFileManager: {
+    type: Boolean,
+    default: true
   }
 })
 
 const messageInput = ref('')
 const inputRef = ref(null)
+const isImageMode = ref(false)
 const showContextTooltip = ref(false)
 const showWarning = ref(false)
 const isMobile = ref(false)
@@ -197,6 +221,15 @@ const statusClass = computed(() => {
   if (props.isAtLimit) return 'status-danger'
   if (props.isNearLimit) return 'status-warning'
   return 'status-normal'
+})
+
+// Computed properties for buttons visibility
+const showFileManager = computed(() => {
+  return props.chatMode === 'agent' && props.showFileManager
+})
+
+const showImageButton = computed(() => {
+  return props.chatMode === 'llm'
 })
 
 const toggleContextDetails = () => {
@@ -276,7 +309,13 @@ const handleSend = () => {
   if (messageInput.value.trim()) {
     // Hide warning when sending message
     showWarning.value = false
-    emit('send-message', messageInput.value.trim())
+    
+    if (isImageMode.value) {
+      emit('generate-image', messageInput.value.trim())
+    } else {
+      emit('send-message', messageInput.value.trim())
+    }
+    
     messageInput.value = ''
     nextTick(() => {
       inputRef.value?.focus()
@@ -289,29 +328,52 @@ const clearInput = () => {
   inputRef.value?.focus()
 }
 
+// Image generation functions
+const toggleImageMode = () => {
+  isImageMode.value = !isImageMode.value
+  nextTick(() => {
+    inputRef.value?.focus()
+  })
+}
+
+const getPlaceholder = () => {
+  if (props.isSummarizing) return 'Суммаризация контекста...'
+  if (props.isStreaming) return 'Агент печатает...'
+  if (isImageMode.value) return 'Опишите изображение для генерации...'
+  return 'text,photo,video,code'
+}
+
 const handleGlobalKeydown = (event) => {
-  // Проверяем, что фокус не на поле ввода
-  if (document.activeElement !== inputRef.value) {
-    // Игнорируем специальные клавиши
-    const ignoredKeys = [
-      'Tab', 'Escape', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
-      'Alt', 'Control', 'Meta', 'Shift', 'CapsLock', 'NumLock', 'ScrollLock',
-      'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-      'Home', 'End', 'PageUp', 'PageDown', 'Insert', 'Delete',
-      'PrintScreen', 'Pause', 'ContextMenu'
-    ]
-    
-    // Проверяем, что это не комбинация клавиш с Ctrl, Alt или Meta
-    const isModifierPressed = event.ctrlKey || event.altKey || event.metaKey
-    
-    // Если это обычная клавиша и не комбинация, устанавливаем фокус
-    if (!isModifierPressed && !ignoredKeys.includes(event.key) && event.key.length === 1) {
-      event.preventDefault()
-      inputRef.value?.focus()
-      // Если поле ввода пустое, добавляем введенный символ
-      if (!messageInput.value) {
-        messageInput.value = event.key
-      }
+  // Проверяем, что фокус не на каком-либо input или textarea
+  const activeElement = document.activeElement
+  const isInputFocused = activeElement?.tagName === 'INPUT' || 
+                         activeElement?.tagName === 'TEXTAREA' ||
+                         activeElement?.isContentEditable
+  
+  // Если фокус на любом поле ввода, не перехватываем
+  if (isInputFocused) {
+    return
+  }
+  
+  // Игнорируем специальные клавиши
+  const ignoredKeys = [
+    'Tab', 'Escape', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+    'Alt', 'Control', 'Meta', 'Shift', 'CapsLock', 'NumLock', 'ScrollLock',
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    'Home', 'End', 'PageUp', 'PageDown', 'Insert', 'Delete',
+    'PrintScreen', 'Pause', 'ContextMenu'
+  ]
+  
+  // Проверяем, что это не комбинация клавиш с Ctrl, Alt или Meta
+  const isModifierPressed = event.ctrlKey || event.altKey || event.metaKey
+  
+  // Если это обычная клавиша и не комбинация, устанавливаем фокус
+  if (!isModifierPressed && !ignoredKeys.includes(event.key) && event.key.length === 1) {
+    event.preventDefault()
+    inputRef.value?.focus()
+    // Если поле ввода пустое, добавляем введенный символ
+    if (!messageInput.value) {
+      messageInput.value = event.key
     }
   }
 }

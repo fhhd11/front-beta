@@ -91,21 +91,6 @@ const props = defineProps({
 
 const isExpanded = ref(false)
 
-// Debug logging
-console.log('=== ToolCallMessage Debug ===')
-console.log('Full props:', props)
-console.log('toolCall:', props.toolCall)
-console.log('toolReturn:', props.toolReturn)
-console.log('toolReturn type:', typeof props.toolReturn)
-console.log('toolReturn keys:', props.toolReturn ? Object.keys(props.toolReturn) : 'null')
-console.log('toolReturn.status:', props.toolReturn?.status)
-console.log('toolReturn.tool_return:', props.toolReturn?.tool_return)
-console.log('toolReturn.content:', props.toolReturn?.content)
-console.log('toolReturn.is_err:', props.toolReturn?.is_err)
-console.log('toolReturn full object:', JSON.stringify(props.toolReturn, null, 2))
-console.log('=== End Debug ===')
-
-
 const canExpand = computed(() => {
   return props.toolCall && props.toolCall.arguments
 })

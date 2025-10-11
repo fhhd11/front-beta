@@ -58,17 +58,11 @@ export function useChat() {
         .map(messageUtils.convertToInternalFormat)
         .filter(msg => msg !== null)
       
-      console.log('Converted messages:', convertedMessages)
-      
       // Sort by timestamp (oldest first for display)
       const sortedMessages = messageUtils.sortByTimestamp(convertedMessages, 'asc')
       
-      console.log('Sorted messages:', sortedMessages)
-      
       // Process messages to group reasoning + assistant and filter empty content
       const processedMessages = messageUtils.processMessages(sortedMessages)
-      
-      console.log('Processed messages:', processedMessages)
       
       messages.value = processedMessages
       
@@ -79,8 +73,6 @@ export function useChat() {
       } else {
         hasMoreMessages.value = false
       }
-
-      console.log('Messages loaded:', messages.value.length)
       
     } catch (err) {
       console.error('Error loading messages:', err)
@@ -201,14 +193,9 @@ export function useChat() {
 
       // Set up event listeners
       sseClient.value.on('message', (data, event) => {
-        console.log('SSE message received:', data)
-        console.log('SSE event type:', event?.type)
         const parsedData = parseSSEData(data)
-        console.log('Parsed data type:', typeof parsedData)
-        console.log('Parsed data keys:', Object.keys(parsedData))
         
         if (parsedData === '[DONE]' || (typeof parsedData === 'object' && parsedData.content === '[DONE]')) {
-          console.log('SSE stream completed with [DONE]')
           handleStreamingComplete(data)
         } else {
           handleStreamingMessage(data)
@@ -221,7 +208,6 @@ export function useChat() {
       })
 
       sseClient.value.on('done', (data, event) => {
-        console.log('SSE stream completed:', data)
         handleStreamingComplete(data)
       })
 
@@ -249,24 +235,16 @@ export function useChat() {
     if (!streamingMessage.value) return
 
     const parsedData = parseSSEData(data)
-    console.log('Parsed streaming data:', parsedData)
-
     // Handle usage statistics - extract assistant message if not received yet
     if (parsedData.message_type === 'usage_statistics') {
-      console.log('Usage statistics received')
-      console.log('Current content:', streamingMessage.value.content)
-      
       // Check if we have an assistant message in steps_messages
       if (parsedData.steps_messages && Array.isArray(parsedData.steps_messages)) {
         // Iterate through all step messages
         for (const stepMessages of parsedData.steps_messages) {
           if (Array.isArray(stepMessages)) {
             for (const msg of stepMessages) {
-              console.log('Step message:', msg.message_type, 'content:', msg.content)
-              
               // Process assistant_message if we haven't received it yet
               if (msg.message_type === 'assistant_message' && !streamingMessage.value.content) {
-                console.log('Found assistant message in steps_messages:', msg.content)
                 streamingMessage.value = {
                   ...streamingMessage.value,
                   content: msg.content || '',
@@ -289,16 +267,9 @@ export function useChat() {
     if (parsedData.message_type === 'reasoning_message') {
       // Update reasoning (check both 'reasoning' and 'content' fields)
       const reasoningChunk = parsedData.reasoning || parsedData.content || ''
-      console.log('Processing reasoning message:', {
-        reasoning: parsedData.reasoning,
-        content: parsedData.content,
-        reasoningText: reasoningChunk,
-        chunkLength: reasoningChunk.length
-      })
       if (reasoningChunk) {
         // Get existing reasoning text or empty string
         const currentReasoning = streamingMessage.value.reasoning?.reasoning || ''
-        console.log('Current reasoning length:', currentReasoning.length, 'Adding chunk:', reasoningChunk)
         
         // Check if this is the first chunk and it starts with punctuation (incomplete)
         const isFirstChunk = currentReasoning.length === 0
@@ -318,13 +289,10 @@ export function useChat() {
             timestamp: new Date(parsedData.date || Date.now())
           }
         }
-        console.log('Updated streaming reasoning, total length:', streamingMessage.value.reasoning.reasoning.length, 'Full text:', streamingMessage.value.reasoning.reasoning)
       }
     } else if (parsedData.message_type === 'assistant_message') {
       // Handle assistant message content (could be full content or token chunks)
       if (parsedData.content) {
-        console.log('Processing assistant message, content length:', parsedData.content.length, 'content:', parsedData.content)
-        
         // Check if this is the first content chunk and it starts with space (incomplete)
         const currentContent = streamingMessage.value.content || ''
         const isFirstContentChunk = currentContent.length === 0
@@ -359,11 +327,9 @@ export function useChat() {
             id: parsedData.id || streamingMessage.value.id
           }
         }
-        console.log('Updated streaming content, total length:', streamingMessage.value.content.length)
       }
     } else if (parsedData.message_type === 'tool_call_message') {
       // Handle tool call messages
-      console.log('Processing tool call message:', parsedData)
       if (parsedData.tool_call) {
         const toolCallMessage = messageUtils.convertToInternalFormat(parsedData)
         if (toolCallMessage) {
@@ -376,7 +342,6 @@ export function useChat() {
       }
     } else if (parsedData.message_type === 'tool_return_message') {
       // Handle tool return messages
-      console.log('Processing tool return message:', parsedData)
       if (parsedData.tool_return && streamingMessage.value.toolCalls) {
         // Find matching tool call and add return value
         const toolReturnMessage = messageUtils.convertToInternalFormat(parsedData)
@@ -425,7 +390,6 @@ export function useChat() {
     // Force reactivity update for real-time display
     if (streamingMessage.value) {
       const streamingIndex = messages.value.findIndex(msg => msg.isStreaming)
-      console.log('Force UI update - streaming index:', streamingIndex)
       if (streamingIndex !== -1) {
         // Use splice to trigger reactivity in Vue 3 - create completely new object
         const updatedMessage = {
@@ -707,7 +671,6 @@ export function useChat() {
   watch(lettaAgentId, (newAgentId, oldAgentId) => {
     // Only load if agent ID actually changed or is being set for the first time
     if (newAgentId && isAuthenticated.value && newAgentId !== oldAgentId) {
-      console.log('Agent ID changed, loading messages:', { newAgentId, oldAgentId })
       clearMessages()
       loadMessages()
     }

@@ -16,9 +16,11 @@
     "type-check": "echo 'No type checking configured'"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.49",
     "@letta-ai/letta-client": "^0.0.68664",
     "@supabase/supabase-js": "^2.58.0",
     "@vueuse/core": "^10.7.0",
+    "ai": "^5.0.68",
     "express": "^4.18.2",
     "vue": "^3.4.0",
     "vue-router": "^4.5.1"
