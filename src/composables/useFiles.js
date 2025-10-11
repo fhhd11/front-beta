@@ -28,13 +28,19 @@ export function useFiles() {
    * Attach source to agent if not already attached
    */
   const attachSourceToAgentIfNeeded = async (sourceId) => {
-    if (!user.value?.letta_agent_id) {
-      console.warn('No agent ID available, skipping source attachment')
+    // Get fresh user data to ensure letta_agent_id is available
+    const agentId = user.value?.letta_agent_id
+    
+    if (!agentId) {
+      console.warn('No agent ID available, skipping source attachment', { 
+        hasUser: !!user.value, 
+        userId: user.value?.id,
+        agentId: user.value?.letta_agent_id 
+      })
       return
     }
 
     try {
-      const agentId = user.value.letta_agent_id
 
       // Check if source is already attached
       const { data: attachedSources, error: getError } = await filesApi.getAgentSources(agentId)
@@ -92,9 +98,6 @@ export function useFiles() {
           ? { id: existingSource, name: sourceName }
           : existingSource
         
-        // Attach source to agent if not already attached
-        await attachSourceToAgentIfNeeded(sourceObj.id)
-        
         userSource.value = sourceObj
         return sourceObj
       }
@@ -120,9 +123,6 @@ export function useFiles() {
               ? { id: retrySource, name: sourceName }
               : retrySource
             
-            // Attach source to agent if not already attached
-            await attachSourceToAgentIfNeeded(sourceObj.id)
-            
             userSource.value = sourceObj
             return sourceObj
           }
@@ -130,9 +130,6 @@ export function useFiles() {
         
         throw new Error(createError)
       }
-
-      // Attach newly created source to agent
-      await attachSourceToAgentIfNeeded(newSource.id)
 
       userSource.value = newSource
       return newSource
@@ -163,6 +160,9 @@ export function useFiles() {
       if (!source || !source.id) {
         throw new Error('Source ID is missing')
       }
+
+      // Attach source to agent (when loading files, user is definitely loaded)
+      await attachSourceToAgentIfNeeded(source.id)
 
       // Get files from source
       const { data: sourceFiles, error: filesError } = await filesApi.getSourceFiles(source.id)
@@ -203,6 +203,9 @@ export function useFiles() {
 
       // Ensure source exists
       const source = await ensureUserSource()
+
+      // Attach source to agent (after ensureUserSource, when user is definitely loaded)
+      await attachSourceToAgentIfNeeded(source.id)
 
       // Simulate progress (since we don't have real progress)
       const progressInterval = setInterval(() => {
