@@ -465,12 +465,15 @@ export const filesApi = {
 
   /**
    * Delete file from source
-   * DELETE /api/v1/sources/{source_id}/files/{file_id}
+   * DELETE /api/v1/sources/{source_id}/{file_id}
+   * Following Letta API pattern for folders: DELETE /v1/folders/{folder_id}/{file_id}
    */
   async deleteFile(sourceId, fileId) {
     try {
-      // Don't use trailing slash for DELETE - causes 401 (inconsistent Letta API behavior)
-      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}`
+      // Use same pattern as folders - no /files/ in path, no trailing slash
+      const endpoint = `/api/v1/letta/sources/${sourceId}/${fileId}`
+      
+      console.log('Deleting file:', { sourceId, fileId, endpoint })
       
       const { data, error } = await apiClient.delete(endpoint)
       
