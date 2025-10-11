@@ -270,18 +270,17 @@ export const filesApi = {
         throw new Error('Source name is required')
       }
 
+      // Don't specify embedding_config - inherit from agent settings
+      // This ensures the source uses the same embedding endpoint (proxy) as the agent
       const payload = {
         name,
         description,
-        metadata,
-        // Use minimal embedding config to inherit from agent settings
-        // Gemini accessed via OpenAI-compatible proxy
-        embedding_config: embedding_config || {
-          embedding_endpoint_type: 'openai',
-          embedding_model: 'gemini-embedding-001',
-          embedding_dim: 768,
-          embedding_chunk_size: 300
-        }
+        metadata
+      }
+      
+      // Only add embedding_config if explicitly provided
+      if (embedding_config) {
+        payload.embedding_config = embedding_config
       }
 
       // Use trailing slash for POST to avoid 307 redirect
