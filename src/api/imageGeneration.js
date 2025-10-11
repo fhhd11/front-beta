@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabase.js'
 import { apiClient } from './client.js'
+import { LITELLM_CONFIG } from '../config/litellm.js'
 
 /**
  * API для генерации изображений через Gemini и загрузки в Supabase Storage
@@ -13,9 +14,8 @@ export const imageGenerationApi = {
    */
   async generateImage(prompt, options = {}) {
     try {
-      const litellmBaseUrl = import.meta.env.VITE_LITELLM_BASE_URL
+      const litellmBaseUrl = LITELLM_CONFIG.baseUrl
       const model = 'gemini/gemini-2.5-flash-image'
-      
       
       if (!litellmBaseUrl) {
         throw new Error('VITE_LITELLM_BASE_URL is not configured')

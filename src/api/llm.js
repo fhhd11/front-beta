@@ -1,4 +1,5 @@
 import { apiClient } from './client.js'
+import { LITELLM_CONFIG } from '../config/litellm.js'
 
 // LLM API service for direct LLM chat (not agent)
 export const llmApi = {
@@ -10,9 +11,8 @@ export const llmApi = {
    */
   async streamChat(messages, options = {}) {
     try {
-      const litellmBaseUrl = import.meta.env.VITE_LITELLM_BASE_URL
-      const model = import.meta.env.VITE_LITELLM_MODEL || 'gemini-2.0-flash-exp'
-      
+      const litellmBaseUrl = LITELLM_CONFIG.baseUrl
+      const model = LITELLM_CONFIG.model
       
       if (!litellmBaseUrl) {
         throw new Error('VITE_LITELLM_BASE_URL is not configured')
@@ -61,8 +61,8 @@ export const llmApi = {
    */
   async chat(messages, options = {}) {
     try {
-      const litellmBaseUrl = import.meta.env.VITE_LITELLM_BASE_URL
-      const model = import.meta.env.VITE_LITELLM_MODEL || 'gemini-2.0-flash-exp'
+      const litellmBaseUrl = LITELLM_CONFIG.baseUrl
+      const model = LITELLM_CONFIG.model
       
       if (!litellmBaseUrl) {
         throw new Error('VITE_LITELLM_BASE_URL is not configured')

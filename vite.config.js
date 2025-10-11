@@ -5,8 +5,8 @@ export default defineConfig({
   plugins: [vue()],
   define: {
     // Explicitly define environment variables for production
-    'import.meta.env.VITE_LITELLM_BASE_URL': JSON.stringify(process.env.VITE_LITELLM_BASE_URL),
-    'import.meta.env.VITE_LITELLM_MODEL': JSON.stringify(process.env.VITE_LITELLM_MODEL),
+    'import.meta.env.VITE_LITELLM_BASE_URL': JSON.stringify(process.env.VITE_LITELLM_BASE_URL || 'https://litellm-production-a2b5.up.railway.app'),
+    'import.meta.env.VITE_LITELLM_MODEL': JSON.stringify(process.env.VITE_LITELLM_MODEL || 'gemini-2.5-flash'),
   },
   server: {
     port: 3000,
