@@ -25,6 +25,46 @@ export function useFiles() {
   })
 
   /**
+   * Attach source to agent if not already attached
+   */
+  const attachSourceToAgentIfNeeded = async (sourceId) => {
+    if (!user.value?.letta_agent_id) {
+      console.warn('No agent ID available, skipping source attachment')
+      return
+    }
+
+    try {
+      const agentId = user.value.letta_agent_id
+
+      // Check if source is already attached
+      const { data: attachedSources, error: getError } = await filesApi.getAgentSources(agentId)
+      
+      if (!getError && attachedSources) {
+        const isAttached = attachedSources.some(source => source.id === sourceId || source === sourceId)
+        
+        if (isAttached) {
+          console.log('Source already attached to agent')
+          return
+        }
+      }
+
+      // Attach source to agent
+      console.log('Attaching source to agent:', { agentId, sourceId })
+      const { error: attachError } = await filesApi.attachSourceToAgent(agentId, sourceId)
+      
+      if (attachError) {
+        console.error('Error attaching source to agent:', attachError)
+        // Don't throw - source is created, attachment is optional
+      } else {
+        console.log('Source successfully attached to agent')
+      }
+    } catch (err) {
+      console.error('Error in attachSourceToAgentIfNeeded:', err)
+      // Don't throw - this is a non-critical operation
+    }
+  }
+
+  /**
    * Get or create user source (file storage)
    * Source name is based on user ID
    */
@@ -52,6 +92,9 @@ export function useFiles() {
           ? { id: existingSource, name: sourceName }
           : existingSource
         
+        // Attach source to agent if not already attached
+        await attachSourceToAgentIfNeeded(sourceObj.id)
+        
         userSource.value = sourceObj
         return sourceObj
       }
@@ -77,6 +120,9 @@ export function useFiles() {
               ? { id: retrySource, name: sourceName }
               : retrySource
             
+            // Attach source to agent if not already attached
+            await attachSourceToAgentIfNeeded(sourceObj.id)
+            
             userSource.value = sourceObj
             return sourceObj
           }
@@ -84,6 +130,9 @@ export function useFiles() {
         
         throw new Error(createError)
       }
+
+      // Attach newly created source to agent
+      await attachSourceToAgentIfNeeded(newSource.id)
 
       userSource.value = newSource
       return newSource

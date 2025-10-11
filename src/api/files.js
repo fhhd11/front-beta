@@ -278,7 +278,7 @@ export const filesApi = {
         // Gemini accessed via OpenAI-compatible proxy
         embedding_config: embedding_config || {
           embedding_endpoint_type: 'openai',
-          embedding_model: 'text-embedding-004',
+          embedding_model: 'gemini-embedding-001',
           embedding_dim: 768,
           embedding_chunk_size: 300
         }
