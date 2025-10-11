@@ -192,7 +192,18 @@ export function useFiles() {
         throw new Error(filesError)
       }
 
-      files.value = sourceFiles || []
+      console.log('Files from API:', sourceFiles)
+      if (sourceFiles && sourceFiles.length > 0) {
+        console.log('First file structure:', sourceFiles[0])
+      }
+
+      // Map API response to expected format (file_name -> name, file_id -> id)
+      files.value = (sourceFiles || []).map(file => ({
+        ...file,
+        id: file.file_id || file.id,
+        name: file.file_name || file.original_file_name || 'Без имени',
+        size: file.file_size || file.metadata?.size
+      }))
 
     } catch (err) {
       console.error('Error loading files:', err)

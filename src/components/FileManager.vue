@@ -131,8 +131,8 @@
               <div class="file-info">
                 <div class="file-name" :title="file.name">{{ file.name }}</div>
                 <div class="file-meta">
-                  <span v-if="file.metadata?.size" class="file-size">
-                    {{ formatFileSize(file.metadata.size) }}
+                  <span v-if="file.size || file.file_size" class="file-size">
+                    {{ formatFileSize(file.size || file.file_size) }}
                   </span>
                   <span v-if="file.created_at" class="file-date">
                     {{ formatDate(file.created_at) }}
