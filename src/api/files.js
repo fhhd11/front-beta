@@ -57,7 +57,8 @@ export const filesApi = {
    */
   async getFolder(folderId) {
     try {
-      const endpoint = `/api/v1/letta/folders/${folderId}`
+      // Use trailing slash for GET without query params
+      const endpoint = `/api/v1/letta/folders/${folderId}/`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -84,7 +85,8 @@ export const filesApi = {
    */
   async getFolderByName(folderName) {
     try {
-      const endpoint = `/api/v1/letta/folders/name/${encodeURIComponent(folderName)}`
+      // Use trailing slash for GET without query params
+      const endpoint = `/api/v1/letta/folders/name/${encodeURIComponent(folderName)}/`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -127,8 +129,8 @@ export const filesApi = {
         metadata
       }
 
-      // Don't use trailing slash for POST to avoid 307 redirect
-      const endpoint = `/api/v1/letta/folders`
+      // Use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/folders/`
       
       const { data, error } = await apiClient.post(endpoint, payload)
       
@@ -155,7 +157,8 @@ export const filesApi = {
    */
   async updateFolder(folderId, updates) {
     try {
-      const endpoint = `/api/v1/letta/folders/${folderId}`
+      // Use trailing slash for PATCH to avoid 307 redirect
+      const endpoint = `/api/v1/letta/folders/${folderId}/`
       
       const { data, error } = await apiClient.patch(endpoint, updates)
       
@@ -182,7 +185,8 @@ export const filesApi = {
    */
   async deleteFolder(folderId) {
     try {
-      const endpoint = `/api/v1/letta/folders/${folderId}`
+      // Use trailing slash for DELETE to avoid 307 redirect
+      const endpoint = `/api/v1/letta/folders/${folderId}/`
       
       const { data, error } = await apiClient.delete(endpoint)
       
@@ -280,8 +284,8 @@ export const filesApi = {
         }
       }
 
-      // Don't use trailing slash for POST to avoid 307 redirect
-      const endpoint = `/api/v1/letta/sources`
+      // Use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/sources/`
       
       const { data, error } = await apiClient.post(endpoint, payload)
       
@@ -308,7 +312,8 @@ export const filesApi = {
    */
   async getSourceByName(sourceName) {
     try {
-      const endpoint = `/api/v1/letta/sources/name/${encodeURIComponent(sourceName)}`
+      // Use trailing slash for GET without query params
+      const endpoint = `/api/v1/letta/sources/name/${encodeURIComponent(sourceName)}/`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -436,8 +441,8 @@ export const filesApi = {
         }))
       })
 
-      // Don't use trailing slash for POST to avoid 307 redirect
-      const endpoint = `/api/v1/letta/sources/${sourceId}/upload`
+      // Use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/sources/${sourceId}/upload/`
       
       // Use special form data upload method
       const { data, error } = await apiClient.postFormData(endpoint, formData)
@@ -465,7 +470,8 @@ export const filesApi = {
    */
   async deleteFile(sourceId, fileId) {
     try {
-      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}`
+      // Use trailing slash for DELETE to avoid 307 redirect
+      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}/`
       
       const { data, error } = await apiClient.delete(endpoint)
       
@@ -492,7 +498,8 @@ export const filesApi = {
    */
   async getFileMetadata(sourceId, fileId) {
     try {
-      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}`
+      // Use trailing slash for GET without query params
+      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}/`
       
       const { data, error } = await apiClient.get(endpoint)
       
@@ -519,8 +526,8 @@ export const filesApi = {
    */
   async attachSourceToAgent(agentId, sourceId) {
     try {
-      // Don't use trailing slash for POST to avoid 307 redirect
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}`
+      // Use trailing slash for POST to avoid 307 redirect
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}/`
       
       const { data, error } = await apiClient.post(endpoint, {})
       
@@ -547,9 +554,10 @@ export const filesApi = {
    */
   async detachSourceFromAgent(agentId, sourceId) {
     try {
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}`
+      // Use trailing slash for DELETE to avoid 307 redirect
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}/`
       
-      const { data, error } = await apiClient.delete(endpoint)
+      const { data, error} = await apiClient.delete(endpoint)
       
       if (error) {
         throw error
