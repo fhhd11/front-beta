@@ -110,38 +110,17 @@ export function useFiles() {
         return sourceObj
       }
 
-      // Get agent's embedding_config to use for the source
-      let agentEmbeddingConfig = null
-      
-      // Get fresh user profile to ensure letta_agent_id is available
-      const { data: profile, error: profileError } = await userApi.getMe()
-      
-      console.log('Getting agent embedding_config...', {
-        hasProfile: !!profile,
-        profileError,
-        userId: profile?.id,
-        agentId: profile?.letta_agent_id
-      })
-      
-      if (profile?.letta_agent_id && !profileError) {
-        const { data: agentData, error: agentError } = await filesApi.getAgent(profile.letta_agent_id)
-        
-        console.log('Agent data received:', {
-          hasData: !!agentData,
-          hasError: !!agentError,
-          error: agentError,
-          embeddingConfig: agentData?.embedding_config
-        })
-        
-        if (agentData && !agentError) {
-          agentEmbeddingConfig = agentData.embedding_config
-          console.log('Using agent embedding_config:', agentEmbeddingConfig)
-        } else {
-          console.warn('Could not get agent embedding_config:', { agentError })
-        }
-      } else {
-        console.warn('No letta_agent_id available, cannot get embedding_config', { profileError })
+      // Use fixed embedding_config compatible with agent's configuration
+      // Gemini embeddings via OpenAI-compatible proxy
+      const agentEmbeddingConfig = {
+        embedding_endpoint_type: 'openai',
+        embedding_endpoint: 'https://litellm-production-1c8b.up.railway.app/',
+        embedding_model: 'gemini-embedding-001',
+        embedding_dim: 768,
+        embedding_chunk_size: 300
       }
+      
+      console.log('Using embedding_config:', agentEmbeddingConfig)
 
       // Create new source if it doesn't exist
       const { data: newSource, error: createError } = await filesApi.createSource({
