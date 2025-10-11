@@ -441,8 +441,8 @@ export const filesApi = {
         }))
       })
 
-      // Use trailing slash for POST to avoid 307 redirect
-      const endpoint = `/api/v1/letta/sources/${sourceId}/upload/`
+      // Don't use trailing slash for /upload endpoint - it causes 307 redirect
+      const endpoint = `/api/v1/letta/sources/${sourceId}/upload`
       
       // Use special form data upload method
       const { data, error } = await apiClient.postFormData(endpoint, formData)
