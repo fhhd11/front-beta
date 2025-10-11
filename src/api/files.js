@@ -576,6 +576,34 @@ export const filesApi = {
   },
 
   /**
+   * Get agent details (including embedding_config)
+   * GET /api/v1/agents/{agent_id}
+   */
+  async getAgent(agentId) {
+    try {
+      // Don't use trailing slash for GET - causes 307 redirect
+      const endpoint = `/api/v1/letta/agents/${agentId}`
+      
+      const { data, error } = await apiClient.get(endpoint)
+      
+      if (error) {
+        throw error
+      }
+
+      return {
+        data,
+        error: null
+      }
+    } catch (error) {
+      console.error('Error fetching agent details:', error)
+      return {
+        data: null,
+        error: error.message || 'Failed to fetch agent details'
+      }
+    }
+  },
+
+  /**
    * Get sources attached to agent
    * GET /api/v1/agents/{agent_id}/sources
    */

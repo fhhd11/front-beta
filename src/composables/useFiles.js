@@ -110,6 +110,16 @@ export function useFiles() {
         return sourceObj
       }
 
+      // Get agent's embedding_config to use for the source
+      let agentEmbeddingConfig = null
+      if (user.value.letta_agent_id) {
+        const { data: agentData, error: agentError } = await filesApi.getAgent(user.value.letta_agent_id)
+        if (agentData && !agentError) {
+          agentEmbeddingConfig = agentData.embedding_config
+          console.log('Using agent embedding_config:', agentEmbeddingConfig)
+        }
+      }
+
       // Create new source if it doesn't exist
       const { data: newSource, error: createError } = await filesApi.createSource({
         name: sourceName,
@@ -117,7 +127,8 @@ export function useFiles() {
         metadata: {
           user_id: user.value.id,
           created_by: 'file_manager'
-        }
+        },
+        embedding_config: agentEmbeddingConfig
       })
 
       if (createError) {
