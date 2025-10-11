@@ -31,7 +31,7 @@ export function useFiles() {
   const attachSourceToAgentIfNeeded = async (sourceId) => {
     try {
       // Get fresh user profile to ensure letta_agent_id is available
-      const { data: profile, error: profileError } = await userApi.getProfile()
+      const { data: profile, error: profileError } = await userApi.getMe()
       
       if (profileError || !profile) {
         console.warn('Could not get user profile for source attachment:', profileError)
