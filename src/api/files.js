@@ -185,8 +185,8 @@ export const filesApi = {
    */
   async deleteFolder(folderId) {
     try {
-      // Use trailing slash for DELETE to avoid 307 redirect
-      const endpoint = `/api/v1/letta/folders/${folderId}/`
+      // Don't use trailing slash for DELETE - causes 401 (inconsistent Letta API behavior)
+      const endpoint = `/api/v1/letta/folders/${folderId}`
       
       const { data, error } = await apiClient.delete(endpoint)
       
@@ -469,8 +469,8 @@ export const filesApi = {
    */
   async deleteFile(sourceId, fileId) {
     try {
-      // Use trailing slash for DELETE to avoid 307 redirect
-      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}/`
+      // Don't use trailing slash for DELETE - causes 401 (inconsistent Letta API behavior)
+      const endpoint = `/api/v1/letta/sources/${sourceId}/files/${fileId}`
       
       const { data, error } = await apiClient.delete(endpoint)
       
