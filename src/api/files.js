@@ -522,14 +522,14 @@ export const filesApi = {
 
   /**
    * Attach source to agent
-   * POST /api/v1/agents/{agent_id}/sources/{source_id}
+   * PATCH /api/v1/agents/{agent_id}/sources/attach/{source_id}
    */
   async attachSourceToAgent(agentId, sourceId) {
     try {
-      // Use trailing slash for POST to avoid 307 redirect
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}/`
+      // Use /attach/ endpoint with PATCH method (following Letta API pattern for folders)
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources/attach/${sourceId}`
       
-      const { data, error } = await apiClient.post(endpoint, {})
+      const { data, error } = await apiClient.patch(endpoint, {})
       
       if (error) {
         throw error
@@ -550,14 +550,14 @@ export const filesApi = {
 
   /**
    * Detach source from agent
-   * DELETE /api/v1/agents/{agent_id}/sources/{source_id}
+   * PATCH /api/v1/agents/{agent_id}/sources/detach/{source_id}
    */
   async detachSourceFromAgent(agentId, sourceId) {
     try {
-      // Use trailing slash for DELETE to avoid 307 redirect
-      const endpoint = `/api/v1/letta/agents/${agentId}/sources/${sourceId}/`
+      // Use /detach/ endpoint with PATCH method (following Letta API pattern for folders)
+      const endpoint = `/api/v1/letta/agents/${agentId}/sources/detach/${sourceId}`
       
-      const { data, error} = await apiClient.delete(endpoint)
+      const { data, error} = await apiClient.patch(endpoint, {})
       
       if (error) {
         throw error
