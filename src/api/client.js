@@ -21,9 +21,11 @@ class ApiClient {
     }
   }
 
-  // Generic request method
-  async request(endpoint, options = {}) {
+  // Generic request method with retry logic
+  async request(endpoint, options = {}, retryCount = 0) {
     const url = `${this.baseURL}${endpoint}`
+    const maxRetries = 3
+    const retryDelay = 1000 * Math.pow(2, retryCount) // Exponential backoff
     
     try {
       const headers = await this.getAuthHeaders()
@@ -79,6 +81,18 @@ class ApiClient {
     } catch (error) {
       if (error instanceof ApiError) {
         throw error
+      }
+      
+      // Network errors - retry with exponential backoff
+      if (retryCount < maxRetries && (
+        error.name === 'TypeError' || 
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('ERR_NETWORK_CHANGED') ||
+        error.message.includes('ERR_PROXY_CONNECTION_FAILED')
+      )) {
+        console.warn(`Network error, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries + 1})`)
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+        return this.request(endpoint, options, retryCount + 1)
       }
       
       // Network or other errors

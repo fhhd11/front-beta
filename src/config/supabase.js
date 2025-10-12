@@ -40,6 +40,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         }
       }
     }
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'etrl-chat'
+    }
   }
 })
 
@@ -63,5 +68,31 @@ export const authHelpers = {
   // Listen to auth changes
   onAuthStateChange: (callback) => {
     return supabase.auth.onAuthStateChange(callback)
+  },
+
+  // Check if user is authenticated
+  isAuthenticated: async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      return !!session
+    } catch (error) {
+      console.error('Error checking authentication:', error)
+      return false
+    }
+  },
+
+  // Refresh session if needed
+  refreshSession: async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession()
+      if (error) {
+        console.error('Error refreshing session:', error)
+        return false
+      }
+      return !!data.session
+    } catch (error) {
+      console.error('Error refreshing session:', error)
+      return false
+    }
   }
 }

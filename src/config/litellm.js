@@ -4,9 +4,11 @@ export const LITELLM_CONFIG = {
   model: import.meta.env.VITE_LITELLM_MODEL || 'gemini-2.5-flash'
 }
 
-// Log configuration for debugging
-console.log('LiteLLM Config:', LITELLM_CONFIG)
-console.log('Environment vars:', {
-  VITE_LITELLM_BASE_URL: import.meta.env.VITE_LITELLM_BASE_URL,
-  VITE_LITELLM_MODEL: import.meta.env.VITE_LITELLM_MODEL
-})
+// Log configuration for debugging (only in development)
+if (import.meta.env.DEV) {
+  console.log('LiteLLM Config:', LITELLM_CONFIG)
+  console.log('Environment vars:', {
+    VITE_LITELLM_BASE_URL: import.meta.env.VITE_LITELLM_BASE_URL,
+    VITE_LITELLM_MODEL: import.meta.env.VITE_LITELLM_MODEL
+  })
+}
